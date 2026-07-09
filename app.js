@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.3.0";
+  const APP_VERSION = "1.4.0";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -92,55 +92,74 @@
   const TOTAL_FIELDS = SCHEMA.reduce((n, s) => n + s.fields.length, 0);
 
   /* ---------- 装置メーカー行入力 (メーカー/型番/運転方式/台数/備考) ---------- */
-  const EQUIP_MODES = ["自動", "セミオート", "マニュアル"];
+  const EQUIP_MODES = ["Auto", "Semi", "Manu"];
+  const PRESET_EQUIP = "pcb_preset_equip";
+  const PRESET_MAT = "pcb_preset_material";
+  // 装置行: メーカー / 型番 / 運転方式 / 台数 を横一列、備考は下段
   function equipRowHtml(r) {
     r = r || {};
-    return `<div class="equip-row">
-      <input class="fi er-maker" placeholder="メーカー" value="${esc(r.maker || "")}" autocomplete="off">
-      <input class="fi er-model" placeholder="型番" value="${esc(r.model || "")}">
-      <select class="fi er-mode">
-        <option value="">運転方式</option>
-        ${EQUIP_MODES.map(o => `<option ${r.mode === o ? "selected" : ""}>${o}</option>`).join("")}
-      </select>
-      <input class="fi er-qty" type="number" inputmode="numeric" min="0" placeholder="台数" value="${esc(r.qty || "")}">
+    return `<div class="row-item" data-kind="equip">
+      <div class="row-line">
+        <input class="fi er-maker" placeholder="メーカー" value="${esc(r.maker || "")}" autocomplete="off">
+        <input class="fi er-model" placeholder="型番" value="${esc(r.model || "")}">
+        <select class="fi er-mode" title="運転方式">
+          <option value="">方式</option>
+          ${EQUIP_MODES.map(o => `<option ${r.mode === o ? "selected" : ""}>${o}</option>`).join("")}
+        </select>
+        <input class="fi er-qty" type="number" inputmode="numeric" min="0" placeholder="台" value="${esc(r.qty || "")}">
+        <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
+      </div>
       <input class="fi er-note" placeholder="備考 (回転数・分解能など)" value="${esc(r.note || "")}">
-      <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
     </div>`;
   }
-  function readEquipRows(box) {
-    return [...box.querySelectorAll(".equip-row")].map(row => ({
-      maker: row.querySelector(".er-maker").value.trim(),
-      model: row.querySelector(".er-model").value.trim(),
-      mode: row.querySelector(".er-mode").value,
-      qty: row.querySelector(".er-qty").value.trim(),
-      note: row.querySelector(".er-note").value.trim(),
-    })).filter(r => r.maker || r.model || r.mode || r.qty || r.note);
+  // 材料行: メーカー / 品番 を横一列、備考は下段
+  function materialRowHtml(r) {
+    r = r || {};
+    return `<div class="row-item" data-kind="material">
+      <div class="row-line">
+        <input class="fi er-maker" placeholder="メーカー" value="${esc(r.maker || "")}" autocomplete="off">
+        <input class="fi er-model" placeholder="品番・グレード" value="${esc(r.model || "")}">
+        <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
+      </div>
+      <input class="fi er-note" placeholder="備考 (顧客・用途など)" value="${esc(r.note || "")}">
+    </div>`;
   }
-  function fmtEquipRow(r) {
+  function rowHtml(kind, r) { return kind === "material" ? materialRowHtml(r) : equipRowHtml(r); }
+  function readRows(box) {
+    return [...box.querySelectorAll(".row-item")].map(row => {
+      const q = s => { const el = row.querySelector(s); return el ? el.value.trim() : ""; };
+      return { maker: q(".er-maker"), model: q(".er-model"), mode: q(".er-mode"), qty: q(".er-qty"), note: q(".er-note") };
+    }).filter(r => r.maker || r.model || r.mode || r.qty || r.note);
+  }
+  function fmtRow(r) {
     const p = [];
     if (r.maker) p.push(r.maker);
     if (r.model) p.push(r.model);
     if (r.qty) p.push(r.qty + "台");
     if (r.mode) p.push("(" + r.mode + ")");
-    if (r.note) p.push(r.note);
+    if (r.note) p.push("— " + r.note);
     return p.join(" ");
   }
-  // 同じ項目(=同じ工程の装置欄)で過去に入力したメーカー名を候補に出す
-  function equipSuggestions(fid) {
-    const s = new Set();
-    makers.forEach(mk => {
-      const d = mk.fields && mk.fields[fid];
-      ((d && d.rows) || []).forEach(r => { if (r.maker) s.add(String(r.maker).trim()); });
-    });
+  // 候補: ①設定ページで登録したメーカー ②過去に同種の欄で入力したメーカー を合わせて表示
+  function presetList(kind) {
+    try { return JSON.parse(localStorage.getItem(kind === "material" ? PRESET_MAT : PRESET_EQUIP)) || []; }
+    catch { return []; }
+  }
+  function makerSuggestions(fid, kind) {
+    const s = new Set(presetList(kind));
+    const eqFids = new Set(); SCHEMA.forEach(sec => sec.fields.forEach(f => { if ((kind === "material" ? f.material : f.equip)) eqFids.add(f.id); }));
+    makers.forEach(mk => eqFids.forEach(fx => {
+      ((mk.fields && mk.fields[fx] && mk.fields[fx].rows) || []).forEach(r => { if (r.maker) s.add(String(r.maker).trim()); });
+    }));
     return [...s].filter(Boolean);
   }
   // メーカー入力欄にフォーカスした時だけ出す候補ポップアップ
   let sugBox = null;
   function hideSug() { if (sugBox) { sugBox.remove(); sugBox = null; } }
   function showSug(input) {
-    const box = input.closest(".equip-box"); if (!box) return;
+    const box = input.closest(".row-box"); if (!box) return;
     const q = input.value.trim().toLowerCase();
-    const list = equipSuggestions(box.dataset.fidEq).filter(s => !q || s.toLowerCase().includes(q)).slice(0, 8);
+    const list = makerSuggestions(box.dataset.fid, box.dataset.kind).filter(s => !q || s.toLowerCase().includes(q)).slice(0, 10);
     hideSug();
     if (!list.length) return;
     sugBox = document.createElement("div");
@@ -180,6 +199,7 @@
     const h = location.hash.slice(1);
     if (h.startsWith("maker/")) return renderDetail(h.slice(6));
     if (h === "compare") return renderCompare();
+    if (h === "settings") return renderSettings();
     return renderList();
   }
   const go = (h) => { location.hash = h; };
@@ -197,6 +217,7 @@
         <input id="q" type="search" placeholder="メーカー名・所在地・タグで検索…" autocomplete="off">
       </div>
       <button class="iconbtn" id="themeBtn" title="テーマ切替">${svg(document.documentElement.dataset.theme === "light" ? "moon" : "sun")}</button>
+      <button class="iconbtn" id="setBtn" title="設定 (メーカー候補)">${svg("settings")}</button>
       <button class="iconbtn" id="importBtn" title="JSON読込">${svg("upload")}</button>
       <button class="iconbtn" id="exportBtn" title="JSON書出">${svg("download")}</button>
       <button class="btn primary" id="addBtn">${svg("plus", 16)} 追加</button>
@@ -207,6 +228,7 @@
     const q = $("#q");
     if (q) { q.value = state.query; q.oninput = () => { state.query = q.value; renderCards(); }; }
     $("#themeBtn").onclick = toggleTheme;
+    $("#setBtn").onclick = () => go("settings");
     $("#addBtn").onclick = () => openEditor(null);
     $("#exportBtn").onclick = exportJSON;
     $("#importBtn").onclick = () => $("#fileInput").click();
@@ -488,25 +510,37 @@
         <div class="es-body">
           ${sec.fields.map(f => {
             const d = (m.fields && m.fields[f.id]) || {};
-            if (f.equip) {
-              // 装置メーカー: メーカー/型番/運転方式/台数/備考 を行で入力、行追加可
+            // 装置メーカー / 材料メーカー: 行入力 (行追加可)
+            if (f.equip || f.material) {
+              const kind = f.material ? "material" : "equip";
               const rows = (d.rows && d.rows.length) ? d.rows : (d.value ? [{ note: d.value }] : [{}]);
               return `<div class="efield">
                 <label class="fl">${esc(f.label)}</label>
                 ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
-                <div class="equip-box" data-fid-eq="${f.id}">
-                  ${rows.map(r => equipRowHtml(r)).join("")}
-                  <button type="button" class="btn ghost sm eq-add">${svg("plus", 13)} 装置を追加</button>
+                <div class="row-box" data-fid="${f.id}" data-kind="${kind}">
+                  ${rows.map(r => rowHtml(kind, r)).join("")}
+                  <button type="button" class="btn ghost sm eq-add">${svg("plus", 13)} ${kind === "material" ? "材料を追加" : "装置を追加"}</button>
                 </div>
               </div>`;
             }
+            // 選択式 (単一/複数): チップのみ + 備考。回答の再入力欄は無し
+            if (f.opts) {
+              const sel = (d.value || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
+              return `<div class="efield">
+                <label class="fl">${esc(f.label)}${f.multi ? ' <span class="multi-tag">複数選択可</span>' : ""}</label>
+                ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
+                <div class="optchips" data-for="${f.id}" data-multi="${f.multi ? 1 : 0}">${f.opts.map(o => `<span class="optchip ${sel.includes(o) ? "on" : ""}" data-val="${esc(o)}">${esc(o)}</span>`).join("")}</div>
+                <input type="hidden" data-fid="${f.id}" data-k="value" value="${esc(d.value || "")}">
+                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足" value="${esc(d.remark || "")}">
+              </div>`;
+            }
+            // 通常項目: 回答 + 備考
             return `<div class="efield">
               <label class="fl">${esc(f.label)}</label>
               ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
-              ${f.opts ? `<div class="optchips" data-for="${f.id}">${f.opts.map(o => `<span class="optchip ${(d.value || "").trim() === o ? "on" : ""}" data-val="${esc(o)}">${esc(o)}</span>`).join("")}</div>` : ""}
               <div class="pair">
                 <textarea class="fi" data-fid="${f.id}" data-k="value" rows="1" placeholder="${esc(f.example ? "例: " + f.example : "")}">${esc(d.value || "")}</textarea>
-                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足${f.note && !f.opts ? " — " + esc(f.note) : ""}" value="${esc(d.remark || "")}">
+                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足${f.note ? " — " + esc(f.note) : ""}" value="${esc(d.remark || "")}">
               </div>
             </div>`;
           }).join("")}
@@ -554,18 +588,7 @@
       s.onclick = () => { curRating = +s.dataset.v; rEl.querySelectorAll("span").forEach(x => x.classList.toggle("on", +x.dataset.v <= curRating)); };
     });
 
-    // カテゴリ編集時は「保存して次へ」で順番に埋められる (現場入力の流れを止めない)
-    if (scoped && onlySec < SCHEMA.length - 1) {
-      const foot = modalRoot.querySelector(".sheet-foot");
-      const nextBtn = document.createElement("button");
-      nextBtn.className = "btn primary"; nextBtn.id = "mSaveNext";
-      nextBtn.innerHTML = `保存して次へ ${svg("chevron", 14)}`;
-      foot.appendChild(nextBtn);
-      nextBtn.onclick = () => doSave(1);
-      const sv = $("#mSave"); sv.classList.remove("primary"); sv.classList.add("ghost");
-    }
-
-    // カテゴリ編集中も左右スワイプで前後の工程へ (現在の入力は自動保存)
+    // カテゴリ編集中は左右スワイプで前後の工程へ (現在の入力は自動保存)
     if (scoped) {
       const sb = modalRoot.querySelector(".sheet-body");
       let stx = 0, sty = 0;
@@ -579,20 +602,25 @@
       }, { passive: true });
     }
 
-    // 選択チップ: タップで回答をセット、同じチップ再タップで解除
+    // 選択チップ: 単一=1つだけON、複数=トグルで複数ON。値は hidden input に " / " 区切りで保持
+    function chipHidden(g) { return modalRoot.querySelector(`input[type="hidden"][data-fid="${g.dataset.for}"][data-k="value"]`); }
     function syncChips() {
       modalRoot.querySelectorAll(".optchips").forEach(g => {
-        const ta = modalRoot.querySelector(`textarea[data-fid="${g.dataset.for}"][data-k="value"]`);
-        const v = ta ? ta.value.trim() : "";
-        g.querySelectorAll(".optchip").forEach(c => c.classList.toggle("on", c.dataset.val === v));
+        const h = chipHidden(g); if (!h) return;
+        const sel = (h.value || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
+        g.querySelectorAll(".optchip").forEach(c => c.classList.toggle("on", sel.includes(c.dataset.val)));
       });
     }
     modalRoot.querySelectorAll(".optchip").forEach(c => c.onclick = () => {
-      const g = c.closest(".optchips");
-      const ta = modalRoot.querySelector(`textarea[data-fid="${g.dataset.for}"][data-k="value"]`);
-      if (!ta) return;
-      ta.value = (ta.value.trim() === c.dataset.val) ? "" : c.dataset.val;
-      ta.dispatchEvent(new Event("input", { bubbles: true }));
+      const g = c.closest(".optchips"), h = chipHidden(g);
+      if (!h) return;
+      const multi = g.dataset.multi === "1";
+      let sel = (h.value || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
+      const v = c.dataset.val, has = sel.includes(v);
+      if (multi) sel = has ? sel.filter(x => x !== v) : [...sel, v];
+      else sel = has ? [] : [v];
+      h.value = sel.join(" / ");
+      h.dispatchEvent(new Event("input", { bubbles: true }));
       syncChips();
     });
 
@@ -603,7 +631,7 @@
       const vals = { hdr: {}, f: {}, eq: {} };
       ["e-name", "e-factory", "e-loc", "e-country", "e-tags"].forEach(k => { const el = $("#" + k); if (el) vals.hdr[k] = el.value; });
       modalRoot.querySelectorAll("[data-fid]").forEach(el => { if (el.value) vals.f[el.dataset.fid + "|" + el.dataset.k] = el.value; });
-      modalRoot.querySelectorAll(".equip-box").forEach(box => { vals.eq[box.dataset.fidEq] = readEquipRows(box); });
+      modalRoot.querySelectorAll(".row-box").forEach(box => { vals.eq[box.dataset.fid] = readRows(box); });
       return vals;
     }
     function applySnap(vals) {
@@ -614,11 +642,11 @@
         if (el) el.value = v;
       });
       Object.entries(vals.eq || {}).forEach(([fid, rows]) => {
-        const box = modalRoot.querySelector(`.equip-box[data-fid-eq="${fid}"]`);
+        const box = modalRoot.querySelector(`.row-box[data-fid="${fid}"]`);
         if (!box) return;
-        box.querySelectorAll(".equip-row").forEach(r => r.remove());
+        box.querySelectorAll(".row-item").forEach(r => r.remove());
         const add = box.querySelector(".eq-add");
-        (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", equipRowHtml(r)));
+        (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", rowHtml(box.dataset.kind, r)));
       });
       syncChips();
     }
@@ -643,9 +671,9 @@
       },
       click: e => {
         const del = e.target.closest(".er-del");
-        if (del) { del.closest(".equip-row").remove(); scheduleDraft(); return; }
+        if (del) { del.closest(".row-item").remove(); scheduleDraft(); return; }
         const add = e.target.closest(".eq-add");
-        if (add) { add.insertAdjacentHTML("beforebegin", equipRowHtml({})); scheduleDraft(); }
+        if (add) { const box = add.closest(".row-box"); add.insertAdjacentHTML("beforebegin", rowHtml(box.dataset.kind, {})); scheduleDraft(); }
       },
       focusin: e => { if (e.target.classList && e.target.classList.contains("er-maker")) showSug(e.target); },
       focusout: e => { if (e.target.classList && e.target.classList.contains("er-maker")) setTimeout(hideSug, 150); },
@@ -660,11 +688,12 @@
         const fid = el.dataset.fid, k = el.dataset.k, v = el.value.trim();
         if (v) { fields[fid] = fields[fid] || {}; fields[fid][k] = v; }
       });
-      // 装置行: rows と、表示/比較/エクスポート用のテキスト(value)を両方保存
-      modalRoot.querySelectorAll(".equip-box").forEach(box => {
-        const fid = box.dataset.fidEq;
-        const rows = readEquipRows(box);
-        if (rows.length) fields[fid] = { rows, value: rows.map(fmtEquipRow).join("\n") };
+      // 装置/材料行: rows と、表示/比較/エクスポート用のテキスト(value)を両方保存
+      modalRoot.querySelectorAll(".row-box").forEach(box => {
+        const fid = box.dataset.fid;
+        const rows = readRows(box);
+        const remark = fields[fid] && fields[fid].remark;
+        if (rows.length) { fields[fid] = { rows, value: rows.map(fmtRow).join("\n") }; if (remark) fields[fid].remark = remark; }
         else delete fields[fid];
       });
       return fields;
@@ -712,6 +741,53 @@
     const m = makers.find(x => x.id === id);
     if (!confirm(`「${m.name}」を削除しますか？この操作は取り消せません。`)) return;
     makers = makers.filter(x => x.id !== id); save(); go(""); toast("削除しました");
+  }
+
+  /* ---------- 設定画面 (メーカー候補の編集) ---------- */
+  function renderSettings() {
+    window.onkeydown = null;
+    const eq = presetList("equip").join("\n");
+    const mat = presetList("material").join("\n");
+    // 過去入力から自動収集される候補の件数
+    const autoEq = new Set(), autoMat = new Set();
+    const eqFids = new Set(), matFids = new Set();
+    SCHEMA.forEach(s => s.fields.forEach(f => { if (f.equip) eqFids.add(f.id); if (f.material) matFids.add(f.id); }));
+    makers.forEach(mk => Object.entries(mk.fields || {}).forEach(([fid, d]) => {
+      (d.rows || []).forEach(r => { if (r.maker) { if (eqFids.has(fid)) autoEq.add(r.maker); if (matFids.has(fid)) autoMat.add(r.maker); } });
+    }));
+    app.innerHTML = topbar() + `
+      <div class="wrap">
+        <button class="btn ghost sm" style="margin-bottom:14px" onclick="location.hash=''">${svg("back", 15)} 一覧へ戻る</button>
+        <h2 style="margin:0 0 4px">${svg("settings", 20)} 設定 — メーカー候補</h2>
+        <p style="color:var(--muted);margin:0 0 18px;font-size:13.5px">
+          装置・材料メーカーの入力欄で表示される候補を、あらかじめ登録できます（1行に1社）。<br>
+          ここに登録したものに加え、これまで入力したメーカー名も自動で候補に出ます。</p>
+
+        <div class="set-card">
+          <label class="fl" style="font-size:14px">🏭 装置メーカー候補 <span style="color:var(--faint);font-weight:500">（過去入力から自動: ${autoEq.size}社）</span></label>
+          <textarea class="fi" id="setEquip" rows="7" placeholder="HITACHI&#10;Schmoll&#10;三菱&#10;ORC&#10;…">${esc(eq)}</textarea>
+        </div>
+        <div class="set-card">
+          <label class="fl" style="font-size:14px">🧪 材料メーカー候補 <span style="color:var(--faint);font-weight:500">（過去入力から自動: ${autoMat.size}社）</span></label>
+          <textarea class="fi" id="setMat" rows="7" placeholder="太陽インキ&#10;味の素&#10;TUC&#10;Nanya&#10;…">${esc(mat)}</textarea>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="btn primary" id="setSave">${svg("check-circle", 16)} 保存</button>
+        </div>
+
+        <div class="app-foot" style="margin-top:36px;text-align:left">
+          <b>データのバックアップ</b><br>
+          ⬇ JSON書き出しでこの端末のデータをファイル保存できます。機種変更や端末故障に備えて定期的な保存をおすすめします。<br>
+          基板メーカーDB v${APP_VERSION} (${APP_DATE})
+        </div>
+      </div>`;
+    bindTop();
+    $("#setSave").onclick = () => {
+      const parse = v => [...new Set(v.split("\n").map(x => x.trim()).filter(Boolean))];
+      localStorage.setItem(PRESET_EQUIP, JSON.stringify(parse($("#setEquip").value)));
+      localStorage.setItem(PRESET_MAT, JSON.stringify(parse($("#setMat").value)));
+      toast("メーカー候補を保存しました");
+    };
   }
 
   /* ---------- 比較画面 ---------- */

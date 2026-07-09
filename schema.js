@@ -33,28 +33,32 @@ window.SCHEMA = [
         "label": "主な基材メーカー",
         "sub": "FR-4一般材　　  　 Tg＜150℃(TMA)",
         "note": "量産実績のある基材メーカーを全て",
-        "example": "Nanya、生益、TUC"
+        "example": "Nanya、生益、TUC",
+        "material": true
       },
       {
         "id": "f6",
         "label": "主な基材メーカー",
         "sub": "FR-4 High Tg材 　Tg＜150℃(TMA)",
         "note": "量産実績のある基材メーカーを全て",
-        "example": "Nanya、生益、TUC"
+        "example": "Nanya、生益、TUC",
+        "material": true
       },
       {
         "id": "f7",
         "label": "主な基材メーカー",
         "sub": "低誘電材",
         "note": "量産実績のある基材メーカーを全て",
-        "example": "EMC、TUC"
+        "example": "EMC、TUC",
+        "material": true
       },
       {
         "id": "f8",
         "label": "主な基材メーカー",
         "sub": "アルミ基材",
         "note": "量産実績のある基材メーカーを全て",
-        "example": "華正"
+        "example": "華正",
+        "material": true
       },
       {
         "id": "f9",
@@ -94,7 +98,8 @@ window.SCHEMA = [
           "印刷法",
           "テンティング法",
           "半田剥離法"
-        ]
+        ],
+        "multi": true
       },
       {
         "id": "f14",
@@ -105,7 +110,8 @@ window.SCHEMA = [
         "opts": [
           "MSAP",
           "SAP"
-        ]
+        ],
+        "multi": true
       },
       {
         "id": "f15",
@@ -181,7 +187,8 @@ window.SCHEMA = [
       {
         "id": "f24",
         "label": "ドリルビットメーカー",
-        "example": "Union tool"
+        "example": "Union tool",
+        "material": true
       },
       {
         "id": "f25",
@@ -317,7 +324,8 @@ window.SCHEMA = [
       {
         "id": "f43",
         "label": "薬液メーカー",
-        "example": "0.35mm"
+        "example": "0.35mm",
+        "material": true
       },
       {
         "id": "f44",
@@ -363,7 +371,8 @@ window.SCHEMA = [
       {
         "id": "f49",
         "label": "薬液メーカー",
-        "example": "0.35mm"
+        "example": "0.35mm",
+        "material": true
       },
       {
         "id": "f50",
@@ -428,23 +437,6 @@ window.SCHEMA = [
     "icon": "git-branch",
     "fields": [
       {
-        "id": "f57",
-        "label": "LDI露光装置の有無",
-        "note": "プルダウンから選択してください",
-        "example": "有り",
-        "opts": [
-          "有り",
-          "無し"
-        ]
-      },
-      {
-        "id": "f58",
-        "label": "LDI装置メーカー",
-        "sub": "LED露光装置保有の場合",
-        "example": "60/60 × 40um",
-        "equip": true
-      },
-      {
         "id": "f59",
         "label": "貫通_サブトラ",
         "sub": "最小L/S　×　銅厚（銅メッキ込）",
@@ -467,31 +459,6 @@ window.SCHEMA = [
         "label": "HDI_セミアディティブ",
         "sub": "最小L/S　×　銅厚",
         "example": "実績なし"
-      },
-      {
-        "id": "f63",
-        "label": "ドライフィルムメーカー",
-        "example": "Dupon、Eternal"
-      },
-      {
-        "id": "f64",
-        "label": "バキュームエッチングラインの有無",
-        "note": "プルダウンから選択してください",
-        "example": "有り",
-        "opts": [
-          "有り",
-          "無し"
-        ]
-      },
-      {
-        "id": "f65",
-        "label": "2流体エッチングラインの有無",
-        "note": "プルダウンから選択してください",
-        "example": "無し",
-        "opts": [
-          "有り",
-          "無し"
-        ]
       }
     ]
   },
@@ -502,7 +469,14 @@ window.SCHEMA = [
       {
         "id": "f66",
         "label": "前処理の粗化処理方法",
-        "example": "ソフトエッチング"
+        "example": "ソフトエッチング",
+        "opts": [
+          "ソフトエッチング",
+          "ブラシ",
+          "パーミス",
+          "ブラシ＋パーミス",
+          "化学処理"
+        ]
       },
       {
         "id": "f67",
@@ -524,9 +498,9 @@ window.SCHEMA = [
         "example": "Dupon、Eternal",
         "opts": [
           "液体レジスト",
-          "ドライフィルム",
-          "両方"
-        ]
+          "ドライフィルム"
+        ],
+        "multi": true
       },
       {
         "id": "f70",
@@ -557,7 +531,14 @@ window.SCHEMA = [
       {
         "id": "f72",
         "label": "前処理の粗化処理方法",
-        "example": "ソフトエッチング"
+        "example": "ソフトエッチング",
+        "opts": [
+          "ソフトエッチング",
+          "ブラシ",
+          "パーミス",
+          "ブラシ＋パーミス",
+          "化学処理"
+        ]
       },
       {
         "id": "f73",
@@ -579,9 +560,9 @@ window.SCHEMA = [
         "example": "Dupon、Eternal",
         "opts": [
           "液体レジスト",
-          "ドライフィルム",
-          "両方"
-        ]
+          "ドライフィルム"
+        ],
+        "multi": true
       },
       {
         "id": "f76",
@@ -612,7 +593,13 @@ window.SCHEMA = [
       {
         "id": "f78",
         "label": "SR前処理の粗化処理方法",
-        "example": "ブラシ＋パーミス／ブラシ＋化学処理"
+        "example": "ブラシ＋パーミス／ブラシ＋化学処理",
+        "opts": [
+          "ブラシ＋パーミス",
+          "ブラシ＋化学処理",
+          "ブラシのみ",
+          "化学処理"
+        ]
       },
       {
         "id": "f79",
@@ -622,9 +609,9 @@ window.SCHEMA = [
         "opts": [
           "スクリーン印刷",
           "スプレーコーター",
-          "ロールコーター",
-          "併用"
-        ]
+          "ロールコーター"
+        ],
+        "multi": true
       },
       {
         "id": "f80",
@@ -657,13 +644,6 @@ window.SCHEMA = [
         "label": "DI装置メーカー\n保有台数",
         "sub": "メーカー名\n○ライン（合計□台）",
         "example": "●●\n2ライン（合計4台）",
-        "equip": true
-      },
-      {
-        "id": "f84",
-        "label": "DI装置メーカー\n保有台数",
-        "sub": "メーカー名\n●ライン（合計■台）",
-        "example": "●●\n0ライン（合計2台）",
         "equip": true
       },
       {
@@ -701,13 +681,8 @@ window.SCHEMA = [
         "id": "f91",
         "label": "使用SR材料",
         "sub": "顧客：メーカー名・品番",
-        "example": "SONY：太陽・PSR-2000 SP200HF"
-      },
-      {
-        "id": "f92",
-        "label": "使用SR材料",
-        "sub": "顧客：メーカー名・品番",
-        "example": "Canon：炎墨・SR-500 HG56"
+        "example": "SONY：太陽・PSR-2000 SP200HF",
+        "material": true
       }
     ]
   },
@@ -734,9 +709,9 @@ window.SCHEMA = [
         "example": "インクジェット、スクリーン",
         "opts": [
           "インクジェット",
-          "スクリーン",
-          "両方"
-        ]
+          "スクリーン"
+        ],
+        "multi": true
       },
       {
         "id": "f95",
@@ -747,13 +722,8 @@ window.SCHEMA = [
         "id": "f96",
         "label": "使用シルクインク材料",
         "sub": "色・メーカー名・品番",
-        "example": "●●・■"
-      },
-      {
-        "id": "f97",
-        "label": "使用シルクインク材料",
-        "sub": "色・メーカー名・品番",
-        "example": "黒・○○・□"
+        "example": "●●・■",
+        "material": true
       },
       {
         "id": "f98",
@@ -810,7 +780,8 @@ window.SCHEMA = [
       {
         "id": "f103",
         "label": "┗OSPメーカーと材料名",
-        "example": "Entek Plus HT"
+        "example": "Entek Plus HT",
+        "material": true
       },
       {
         "id": "f104",
@@ -1212,13 +1183,6 @@ window.SCHEMA = [
         "note": "保有している装置メーカー全て記載\n不足なら行を追加して下さい",
         "example": "白井\nVISPER710SLZ /25um/ 5台",
         "equip": true
-      },
-      {
-        "id": "f148",
-        "label": "外観検査",
-        "sub": "AVI装置メーカー\n型番/分解能/台数",
-        "example": "Machvision\nAF16-3045-10-A/20um / 3台",
-        "equip": true
       }
     ]
   },
@@ -1236,7 +1200,8 @@ window.SCHEMA = [
           "PEパック",
           "アルミパック",
           "真空パック"
-        ]
+        ],
+        "multi": true
       },
       {
         "id": "f150",
@@ -1244,11 +1209,12 @@ window.SCHEMA = [
         "note": "プルダウンから選択してください",
         "example": "PEパック、アルミパック",
         "opts": [
+          "プチプチ",
           "PEパック",
           "アルミパック",
-          "真空パック",
-          "プチプチ"
-        ]
+          "真空パック"
+        ],
+        "multi": true
       }
     ]
   },
