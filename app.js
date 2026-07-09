@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.5.1";
+  const APP_VERSION = "1.6.0";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -94,6 +94,43 @@
   const OTHER = "__other__";
   const splitVals = v => (v || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
 
+  /* ---------- スペック入力 (厚み等を数値ドロップダウンで選択) ---------- */
+  const stripUnit = (s, u) => String(s == null ? "" : s).replace(new RegExp(u + "\\s*$"), "").replace(u, "").trim();
+  function parseSpec(d, sp) {
+    // 保存済み spec を優先。無ければ既存テキスト(value)から最小限パースして初期値に
+    if (d.spec) return d.spec;
+    const v = {};
+    if (!d.value) return v;
+    if (sp.kind === "range") { const t = String(d.value).split(/[～~]/); v.min = stripUnit(t[0] || "", sp.unit); v.max = stripUnit(t[1] || "", sp.unit); }
+    else if (sp.kind === "single") { v.v = stripUnit(d.value, sp.unit); }
+    return v;
+  }
+  function specSelect(key, opts, unit, cur, ph) {
+    const extra = cur && !opts.includes(cur) ? `<option selected>${esc(cur)}</option>` : "";
+    return `<span class="spec-cell"><select class="fi spec-sel" data-key="${key}">
+      <option value="">${esc(ph || "—")}</option>${extra}
+      ${opts.map(o => `<option ${cur === o ? "selected" : ""}>${esc(o)}</option>`).join("")}
+    </select>${unit ? `<span class="spec-unit">${esc(unit)}</span>` : ""}</span>`;
+  }
+  function specInner(sp, vals) {
+    if (sp.kind === "range")
+      return specSelect("min", sp.opts, "", vals.min, "最小") + `<span class="spec-sep">～</span>` + specSelect("max", sp.opts, sp.unit, vals.max, "最大");
+    if (sp.kind === "single")
+      return specSelect("v", sp.opts, sp.unit, vals.v, "選択");
+    return sp.parts.map(pt => `<span class="spec-part"><span class="spec-plabel">${esc(pt.label)}</span>${specSelect(pt.key, pt.opts, pt.unit, vals[pt.key], "—")}</span>`).join("");
+  }
+  function readSpec(box) {
+    const vals = {};
+    box.querySelectorAll(".spec-sel").forEach(s => { if (s.value) vals[s.dataset.key] = s.value; });
+    return vals;
+  }
+  function fmtSpec(fid, vals) {
+    const sp = FIELD[fid].spec;
+    if (sp.kind === "range") { if (vals.min && vals.max) return `${vals.min}～${vals.max}${sp.unit}`; const o = vals.min || vals.max; return o ? `${o}${sp.unit}` : ""; }
+    if (sp.kind === "single") return vals.v ? `${vals.v}${sp.unit}` : "";
+    return sp.parts.map(pt => vals[pt.key] ? `${pt.label}${vals[pt.key]}${pt.unit}` : null).filter(Boolean).join(" / ");
+  }
+
   /* ---------- 装置メーカー行入力 (メーカー/型番/運転方式/台数/備考) ---------- */
   const EQUIP_MODES = ["Auto", "Semi", "Manu"];
   const PRESET_EQUIP = "pcb_preset_equip";
@@ -167,10 +204,11 @@
     if (!list.length) return;
     sugBox = document.createElement("div");
     sugBox.className = "sugbox";
-    sugBox.innerHTML = list.map(s => `<div class="sug-item">${esc(s)}</div>`).join("");
+    // 横並びのチップで候補表示 (タップで入力)
+    sugBox.innerHTML = list.map(s => `<span class="sug-chip">${esc(s)}</span>`).join("");
     document.body.appendChild(sugBox);
     positionSug(input);
-    sugBox.querySelectorAll(".sug-item").forEach(it => it.addEventListener("pointerdown", ev => {
+    sugBox.querySelectorAll(".sug-chip").forEach(it => it.addEventListener("pointerdown", ev => {
       ev.preventDefault();
       input.value = it.textContent;
       input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -180,9 +218,12 @@
   function positionSug(input) {
     if (!sugBox) return;
     const r = input.getBoundingClientRect();
-    sugBox.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 220)) + "px";
-    sugBox.style.top = (r.bottom + 4) + "px";
-    sugBox.style.minWidth = Math.min(r.width, window.innerWidth - 24) + "px";
+    // 入力欄の下に、画面幅いっぱいの横スクロール帯として配置
+    const left = 10, right = 10;
+    sugBox.style.left = left + "px";
+    sugBox.style.right = right + "px";
+    sugBox.style.width = "auto";
+    sugBox.style.top = (r.bottom + 5) + "px";
   }
   // スクロール時: メーカー欄にフォーカス中なら追従、それ以外は閉じる
   document.addEventListener("scroll", () => {
@@ -194,7 +235,7 @@
 
   // 編集モーダル用の委任リスナー (1回だけ登録し、開いている編集画面のフックに転送)
   let editorHooks = null;
-  ["input", "click", "focusin", "focusout"].forEach(type =>
+  ["input", "change", "click", "focusin", "focusout"].forEach(type =>
     modalRoot.addEventListener(type, e => { if (editorHooks && editorHooks[type]) editorHooks[type](e); }));
 
   /* ---------- ルーティング (ハッシュ) ---------- */
@@ -515,6 +556,16 @@
         <div class="es-body">
           ${sec.fields.map(f => {
             const d = (m.fields && m.fields[f.id]) || {};
+            // スペック入力: 数値をドロップダウンで選択 (厚み等)
+            if (f.spec) {
+              const vals = parseSpec(d, f.spec);
+              return `<div class="efield">
+                <label class="fl">${esc(f.label)}</label>
+                ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
+                <div class="spec-box" data-fid="${f.id}"><div class="spec-row">${specInner(f.spec, vals)}</div></div>
+                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足" value="${esc(d.remark || "")}">
+              </div>`;
+            }
             // 装置メーカー / 材料メーカー: 行入力 (行追加可)
             if (f.equip || f.material) {
               const kind = f.material ? "material" : "equip";
@@ -675,10 +726,11 @@
     const DKEY = "pcb_draft_v1";
     const dtag = (isNew ? "new" : id) + ":" + (scoped ? onlySec : "all");
     function snapshot() {
-      const vals = { hdr: {}, f: {}, eq: {} };
+      const vals = { hdr: {}, f: {}, eq: {}, sp: {} };
       ["e-name", "e-factory", "e-loc", "e-country", "e-tags"].forEach(k => { const el = $("#" + k); if (el) vals.hdr[k] = el.value; });
       modalRoot.querySelectorAll("input[data-fid],textarea[data-fid]").forEach(el => { if (el.value) vals.f[el.dataset.fid + "|" + el.dataset.k] = el.value; });
       modalRoot.querySelectorAll(".row-box").forEach(box => { vals.eq[box.dataset.fid] = readRows(box); });
+      modalRoot.querySelectorAll(".spec-box").forEach(box => { vals.sp[box.dataset.fid] = readSpec(box); });
       return vals;
     }
     function applySnap(vals) {
@@ -694,6 +746,10 @@
         box.querySelectorAll(".row-item").forEach(r => r.remove());
         const add = box.querySelector(".eq-add");
         (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", rowHtml(box.dataset.kind, r)));
+      });
+      Object.entries(vals.sp || {}).forEach(([fid, sv]) => {
+        const box = modalRoot.querySelector(`.spec-box[data-fid="${fid}"]`);
+        if (box) box.querySelectorAll(".spec-sel").forEach(s => { if (sv[s.dataset.key] != null) s.value = sv[s.dataset.key]; });
       });
       syncChips();
     }
@@ -716,6 +772,7 @@
         scheduleDraft();
         if (e.target.classList && e.target.classList.contains("er-maker")) showSug(e.target);
       },
+      change: () => scheduleDraft(),
       click: e => {
         const del = e.target.closest(".er-del");
         if (del) { del.closest(".row-item").remove(); scheduleDraft(); return; }
@@ -742,6 +799,17 @@
         const remark = fields[fid] && fields[fid].remark;
         if (rows.length) { fields[fid] = { rows, value: rows.map(fmtRow).join("\n") }; if (remark) fields[fid].remark = remark; }
         else delete fields[fid];
+      });
+      // スペック: spec(選択値) と value(整形テキスト) を保存
+      modalRoot.querySelectorAll(".spec-box").forEach(box => {
+        const fid = box.dataset.fid, sv = readSpec(box);
+        const remark = fields[fid] && fields[fid].remark;
+        const has = Object.keys(sv).length > 0;
+        if (has || remark) {
+          fields[fid] = {};
+          if (has) { fields[fid].spec = sv; fields[fid].value = fmtSpec(fid, sv); }
+          if (remark) fields[fid].remark = remark;
+        } else delete fields[fid];
       });
       return fields;
     }
