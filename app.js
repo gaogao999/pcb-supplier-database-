@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.6.0";
+  const APP_VERSION = "1.6.1";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -193,45 +193,29 @@
     }));
     return [...s].filter(Boolean);
   }
-  // メーカー入力欄にフォーカスした時だけ出す候補ポップアップ
+  // メーカー入力欄にフォーカスした時だけ、その欄の真下にインライン表示する候補バー
+  // (position:fixed の浮遊ポップアップはiOSキーボードで位置がズレて不安定なため、DOMに直接差し込む)
   let sugBox = null;
   function hideSug() { if (sugBox) { sugBox.remove(); sugBox = null; } }
   function showSug(input) {
     const box = input.closest(".row-box"); if (!box) return;
     const q = input.value.trim().toLowerCase();
-    const list = makerSuggestions(box.dataset.fid, box.dataset.kind).filter(s => !q || s.toLowerCase().includes(q)).slice(0, 10);
+    const list = makerSuggestions(box.dataset.fid, box.dataset.kind).filter(s => !q || s.toLowerCase().includes(q)).slice(0, 12);
     hideSug();
     if (!list.length) return;
     sugBox = document.createElement("div");
     sugBox.className = "sugbox";
-    // 横並びのチップで候補表示 (タップで入力)
     sugBox.innerHTML = list.map(s => `<span class="sug-chip">${esc(s)}</span>`).join("");
-    document.body.appendChild(sugBox);
-    positionSug(input);
+    // 入力欄(のある行)の直後に差し込む → 常に欄の真下・キーボードでもズレない
+    const anchor = input.closest(".row-line") || input;
+    anchor.insertAdjacentElement("afterend", sugBox);
     sugBox.querySelectorAll(".sug-chip").forEach(it => it.addEventListener("pointerdown", ev => {
-      ev.preventDefault();
+      ev.preventDefault();  // フォーカスを外さず(=blurさせず)チップで確定
       input.value = it.textContent;
       input.dispatchEvent(new Event("input", { bubbles: true }));
       hideSug();
     }));
   }
-  function positionSug(input) {
-    if (!sugBox) return;
-    const r = input.getBoundingClientRect();
-    // 入力欄の下に、画面幅いっぱいの横スクロール帯として配置
-    const left = 10, right = 10;
-    sugBox.style.left = left + "px";
-    sugBox.style.right = right + "px";
-    sugBox.style.width = "auto";
-    sugBox.style.top = (r.bottom + 5) + "px";
-  }
-  // スクロール時: メーカー欄にフォーカス中なら追従、それ以外は閉じる
-  document.addEventListener("scroll", () => {
-    if (!sugBox) return;
-    const ae = document.activeElement;
-    if (ae && ae.classList && ae.classList.contains("er-maker")) positionSug(ae);
-    else hideSug();
-  }, true);
 
   // 編集モーダル用の委任リスナー (1回だけ登録し、開いている編集画面のフックに転送)
   let editorHooks = null;
@@ -767,10 +751,12 @@
       clearTimeout(dTimer);
       dTimer = setTimeout(() => localStorage.setItem(DKEY, JSON.stringify({ t: dtag, ts: Date.now(), vals: snapshot() })), 400);
     };
+    let sugTimer = null;
+    const isMaker = e => e.target.classList && e.target.classList.contains("er-maker");
     editorHooks = {
       input: e => {
         scheduleDraft();
-        if (e.target.classList && e.target.classList.contains("er-maker")) showSug(e.target);
+        if (isMaker(e)) { clearTimeout(sugTimer); showSug(e.target); }
       },
       change: () => scheduleDraft(),
       click: e => {
@@ -779,8 +765,9 @@
         const add = e.target.closest(".eq-add");
         if (add) { const box = add.closest(".row-box"); add.insertAdjacentHTML("beforebegin", rowHtml(box.dataset.kind, {})); scheduleDraft(); }
       },
-      focusin: e => { if (e.target.classList && e.target.classList.contains("er-maker")) showSug(e.target); },
-      focusout: e => { if (e.target.classList && e.target.classList.contains("er-maker")) setTimeout(hideSug, 150); },
+      // 別のメーカー欄へ移った時に、前の欄のhideタイマーが新しい候補を消さないようclearする
+      focusin: e => { if (isMaker(e)) { clearTimeout(sugTimer); showSug(e.target); } },
+      focusout: e => { if (isMaker(e)) { clearTimeout(sugTimer); sugTimer = setTimeout(hideSug, 200); } },
     };
     $("#mCancel").onclick = () => { clearDraft(); closeModal(); };
 
