@@ -35,15 +35,50 @@
         "value": "SONY、Canon、A社、B社、D社"
       },
       "f5": {
-        "value": "Nanya、生益、TUC"
+        "rows": [
+          {
+            "maker": "Nanya"
+          },
+          {
+            "maker": "生益"
+          },
+          {
+            "maker": "TUC"
+          }
+        ],
+        "value": "Nanya\n生益\nTUC"
       },
       "f6": {
-        "value": "Nanya、生益、TUC"
+        "rows": [
+          {
+            "maker": "Nanya"
+          },
+          {
+            "maker": "生益"
+          },
+          {
+            "maker": "TUC"
+          }
+        ],
+        "value": "Nanya\n生益\nTUC"
       },
       "f7": {
-        "value": "EMC、TUC"
+        "rows": [
+          {
+            "maker": "EMC"
+          },
+          {
+            "maker": "TUC"
+          }
+        ],
+        "value": "EMC\nTUC"
       },
       "f8": {
+        "rows": [
+          {
+            "maker": "華正"
+          }
+        ],
         "value": "華正"
       },
       "f9": {
@@ -89,10 +124,31 @@
         "value": "1/2～2oz"
       },
       "f23": {
-        "value": "HITACHIx50台（200Krpm）\nSchmollx30台（160Krpm）"
+        "rows": [
+          {
+            "maker": "HITACHI",
+            "model": "ND-6L210E",
+            "mode": "Auto",
+            "qty": "50",
+            "note": "200Krpm"
+          },
+          {
+            "maker": "Schmoll",
+            "model": "",
+            "mode": "Auto",
+            "qty": "30",
+            "note": "160Krpm"
+          }
+        ],
+        "value": "HITACHI ND-6L210E 50台 (Auto) — 200Krpm\nSchmoll 30台 (Auto) — 160Krpm"
       },
       "f24": {
-        "value": "Union tool"
+        "rows": [
+          {
+            "maker": "Union Tool"
+          }
+        ],
+        "value": "Union Tool"
       },
       "f25": {
         "value": "外注研磨"
@@ -113,7 +169,19 @@
         "value": "8:1"
       },
       "f31": {
-        "value": "HITACHIx5台（LUC-2K）\n三菱x10台（GTW6）"
+        "rows": [
+          {
+            "maker": "HITACHI",
+            "model": "LUC-2K",
+            "qty": "5"
+          },
+          {
+            "maker": "三菱",
+            "model": "GTW6",
+            "qty": "10"
+          }
+        ],
+        "value": "HITACHI LUC-2K 5台\n三菱 GTW6 10台"
       },
       "f32": {
         "value": "75um"
@@ -190,12 +258,6 @@
       "f56": {
         "value": "0.2mm"
       },
-      "f57": {
-        "value": "有り"
-      },
-      "f58": {
-        "value": "60/60 × 40um"
-      },
       "f59": {
         "value": "60/60 × 40um"
       },
@@ -207,15 +269,6 @@
       },
       "f62": {
         "value": "実績なし"
-      },
-      "f63": {
-        "value": "Dupon、Eternal"
-      },
-      "f64": {
-        "value": "有り"
-      },
-      "f65": {
-        "value": "無し"
       },
       "f66": {
         "value": "ソフトエッチング"
@@ -271,9 +324,6 @@
       "f83": {
         "value": "●●\n2ライン（合計4台）"
       },
-      "f84": {
-        "value": "●●\n0ライン（合計2台）"
-      },
       "f85": {
         "value": "±0.05mm"
       },
@@ -295,9 +345,6 @@
       "f91": {
         "value": "SONY：太陽・PSR-2000 SP200HF"
       },
-      "f92": {
-        "value": "Canon：炎墨・SR-500 HG56"
-      },
       "f93": {
         "value": "可 available"
       },
@@ -309,9 +356,6 @@
       },
       "f96": {
         "value": "●●・■"
-      },
-      "f97": {
-        "value": "黒・○○・□"
       },
       "f98": {
         "value": "0.1mm"
@@ -463,14 +507,11 @@
       "f147": {
         "value": "白井\nVISPER710SLZ /25um/ 5台"
       },
-      "f148": {
-        "value": "Machvision\nAF16-3045-10-A/20um / 3台"
-      },
       "f149": {
         "value": "プチプチ"
       },
       "f150": {
-        "value": "PEパック、アルミパック"
+        "value": "PEパック / アルミパック"
       },
       "f151": {
         "value": "可 available"

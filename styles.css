@@ -213,25 +213,31 @@ textarea.fi{resize:vertical;min-height:44px}
 .sec-edit{width:34px;height:34px;flex:none;border-radius:9px}
 .rating-input{display:flex;gap:6px;font-size:30px;cursor:pointer}
 
-/* ---------- 装置メーカー行入力 ---------- */
-.equip-box{display:flex;flex-direction:column;gap:10px;margin-top:2px}
-.equip-row{
-  position:relative;display:grid;grid-template-columns:1fr 1fr;gap:7px;
-  padding:11px 10px 10px;border:1px dashed var(--line2);border-radius:11px;background:var(--card2);
+/* ---------- 装置/材料メーカー 行入力 ---------- */
+.row-box{display:flex;flex-direction:column;gap:10px;margin-top:2px}
+.row-item{
+  display:flex;flex-direction:column;gap:6px;
+  padding:10px 9px;border:1px dashed var(--line2);border-radius:11px;background:var(--card2);
 }
-.equip-row .er-note{grid-column:1/-1}
-.equip-row .fi{background:var(--card)}
+.row-line{display:grid;gap:5px;align-items:center}
+.row-item[data-kind="equip"] .row-line{grid-template-columns:minmax(0,1.35fr) minmax(0,1.1fr) 58px 42px 24px}
+.row-item[data-kind="material"] .row-line{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 24px}
+.row-line .fi{background:var(--card);font-size:14px;padding:9px 8px}
+.row-line .er-mode{padding:9px 4px;font-size:13px}
+.row-line .er-qty{padding:9px 4px;text-align:center}
+.row-item .er-note{background:var(--card);font-size:13px;padding:8px 10px}
 .er-del{
-  position:absolute;top:-9px;right:-7px;width:26px;height:26px;border-radius:50%;
+  width:24px;height:24px;border-radius:50%;flex:none;
   background:var(--bg2);border:1px solid var(--line2);color:var(--danger);
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
 }
-.er-del:hover{border-color:var(--danger)}
+.er-del:hover{border-color:var(--danger);background:var(--danger);color:#fff}
 .eq-add{align-self:flex-start}
-@media (min-width:721px){
-  .equip-row{grid-template-columns:1.1fr 1fr .9fr .6fr 1.4fr}
-  .equip-row .er-note{grid-column:auto}
-}
+.multi-tag{font-size:10px;font-weight:800;color:var(--accent);background:#4f8cff1c;border:1px solid #4f8cff44;padding:1px 7px;border-radius:999px;vertical-align:middle;margin-left:4px}
+
+/* 設定カード */
+.set-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
+.set-card textarea{margin-top:8px;font-size:15px;line-height:1.7}
 
 /* メーカー候補サジェスト (フォーカス時のみ表示) */
 .sugbox{
