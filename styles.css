@@ -250,16 +250,16 @@ textarea.fi{resize:vertical;min-height:44px}
 .set-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
 .set-card textarea{margin-top:8px;font-size:15px;line-height:1.7}
 
-/* メーカー候補サジェスト (フォーカス時のみ・横並びチップ) */
+/* メーカー候補サジェスト (入力欄の真下にインライン表示・横並びチップ) */
 .sugbox{
-  position:fixed;z-index:120;background:var(--bg2);border:1px solid var(--brand);
-  border-radius:12px;box-shadow:var(--shadow);padding:8px;
-  display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
+  margin:7px 0 2px;background:var(--card);border:1px solid var(--brand);
+  border-radius:11px;padding:7px 8px;
+  display:flex;gap:7px;align-items:center;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
 }
-.sugbox::before{content:"候補";flex:none;align-self:center;font-size:10px;font-weight:800;color:var(--faint);padding:0 4px}
+.sugbox::before{content:"候補";flex:none;font-size:10px;font-weight:800;color:var(--faint);padding:0 2px}
 .sugbox::-webkit-scrollbar{height:4px}
 .sugbox::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px}
-.sug-chip{flex:none;padding:9px 15px;border-radius:999px;background:var(--brandDim);border:1px solid var(--brand);color:var(--brand2);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.sug-chip{flex:none;padding:8px 14px;border-radius:999px;background:var(--brandDim);border:1px solid var(--brand);color:var(--brand2);font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}
 .sug-chip:active{transform:scale(.95)}
 
 /* スペック入力 (数値ドロップダウン) */
