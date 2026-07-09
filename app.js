@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.5.0";
+  const APP_VERSION = "1.5.1";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -832,11 +832,15 @@
           <button class="btn primary" id="setSave">${svg("check-circle", 16)} 保存</button>
         </div>
 
-        <div class="app-foot" style="margin-top:36px;text-align:left">
-          <b>データのバックアップ</b><br>
-          ⬇ JSON書き出しでこの端末のデータをファイル保存できます。機種変更や端末故障に備えて定期的な保存をおすすめします。<br>
-          基板メーカーDB v${APP_VERSION} (${APP_DATE})
+        <div class="set-card" style="margin-top:22px">
+          <label class="fl" style="font-size:14px">💾 データのバックアップ</label>
+          <p style="color:var(--muted);font-size:12.5px;margin:6px 0 12px">この端末のデータをファイルに保存できます。機種変更や端末故障に備えて定期的な保存をおすすめします。</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn ghost" id="setExport">${svg("download", 15)} JSON書き出し</button>
+            <button class="btn ghost" id="setImport">${svg("upload", 15)} JSON読み込み</button>
+          </div>
         </div>
+        <div class="app-foot" style="margin-top:26px">基板メーカーDB v${APP_VERSION} (${APP_DATE})</div>
       </div>`;
     bindTop();
     $("#setSave").onclick = () => {
@@ -845,6 +849,8 @@
       localStorage.setItem(PRESET_MAT, JSON.stringify(parse($("#setMat").value)));
       toast("メーカー候補を保存しました");
     };
+    $("#setExport").onclick = exportJSON;
+    $("#setImport").onclick = () => $("#fileInput").click();
   }
 
   /* ---------- 比較画面 ---------- */
