@@ -127,8 +127,22 @@ button{font-family:inherit}
 .progress-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--brand2),var(--brand));border-radius:999px;transition:width .5s}
 .progress small{color:var(--muted);font-size:12px}
 
-.section-nav{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:14px;scrollbar-width:thin}
+.section-nav{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;scrollbar-width:thin}
 .section-nav .chip{flex:none}
+
+/* ---------- 工程ページャー (スワイプ切替) ---------- */
+.swipe-hint{display:none;color:var(--faint);font-size:11.5px;text-align:center;margin:0 0 10px}
+@media (pointer:coarse){.swipe-hint{display:block}}
+.pager-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.pn-label{font-size:13px;font-weight:800;color:var(--muted);text-align:center;flex:1;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.pg-next svg{transform:rotate(180deg)}
+.iconbtn:disabled{opacity:.3;pointer-events:none}
+.page-card{touch-action:pan-y}
+.slide-l{animation:slideL .22s ease}
+.slide-r{animation:slideR .22s ease}
+@keyframes slideL{from{opacity:.25;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes slideR{from{opacity:.25;transform:translateX(-30px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide-l,.slide-r{animation:none}}
 
 .acc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
 .acc-head{display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;user-select:none}
@@ -198,6 +212,38 @@ textarea.fi{resize:vertical;min-height:44px}
 .optchip:active{transform:scale(.95)}
 .sec-edit{width:34px;height:34px;flex:none;border-radius:9px}
 .rating-input{display:flex;gap:6px;font-size:30px;cursor:pointer}
+
+/* ---------- 装置メーカー行入力 ---------- */
+.equip-box{display:flex;flex-direction:column;gap:10px;margin-top:2px}
+.equip-row{
+  position:relative;display:grid;grid-template-columns:1fr 1fr;gap:7px;
+  padding:11px 10px 10px;border:1px dashed var(--line2);border-radius:11px;background:var(--card2);
+}
+.equip-row .er-note{grid-column:1/-1}
+.equip-row .fi{background:var(--card)}
+.er-del{
+  position:absolute;top:-9px;right:-7px;width:26px;height:26px;border-radius:50%;
+  background:var(--bg2);border:1px solid var(--line2);color:var(--danger);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+}
+.er-del:hover{border-color:var(--danger)}
+.eq-add{align-self:flex-start}
+@media (min-width:721px){
+  .equip-row{grid-template-columns:1.1fr 1fr .9fr .6fr 1.4fr}
+  .equip-row .er-note{grid-column:auto}
+}
+
+/* メーカー候補サジェスト (フォーカス時のみ表示) */
+.sugbox{
+  position:fixed;z-index:120;background:var(--bg2);border:1px solid var(--brand);
+  border-radius:11px;box-shadow:var(--shadow);max-height:216px;overflow:auto;padding:4px;min-width:180px;
+}
+.sug-item{padding:10px 14px;border-radius:8px;font-size:14.5px;cursor:pointer;color:var(--text)}
+.sug-item:hover,.sug-item:active{background:var(--brandDim);color:var(--brand2)}
+
+/* バージョン表記フッター */
+.app-foot{margin-top:30px;text-align:center;color:var(--faint);font-size:11.5px;line-height:1.8}
+.app-foot b{color:var(--muted)}
 .rating-input span{color:var(--line2);transition:.1s}
 .rating-input span.on{color:var(--star)}
 

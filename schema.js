@@ -175,7 +175,8 @@ window.SCHEMA = [
         "id": "f23",
         "label": "NCドリル装置メーカー\n保有台数（スピンドル回転数）",
         "sub": "〇〇x□台（△万rpm）\n▲▲x■台（▲万rpm）",
-        "example": "HITACHIx50台（200Krpm）\nSchmollx30台（160Krpm）"
+        "example": "HITACHIx50台（200Krpm）\nSchmollx30台（160Krpm）",
+        "equip": true
       },
       {
         "id": "f24",
@@ -232,7 +233,8 @@ window.SCHEMA = [
         "id": "f31",
         "label": "レーザードリル装置メーカー\n保有台数（型番）",
         "sub": "〇〇x□台（型番）\n▲▲x■台（型番）",
-        "example": "HITACHIx5台（LUC-2K）\n三菱x10台（GTW6）"
+        "example": "HITACHIx5台（LUC-2K）\n三菱x10台（GTW6）",
+        "equip": true
       },
       {
         "id": "f32",
@@ -439,7 +441,8 @@ window.SCHEMA = [
         "id": "f58",
         "label": "LDI装置メーカー",
         "sub": "LED露光装置保有の場合",
-        "example": "60/60 × 40um"
+        "example": "60/60 × 40um",
+        "equip": true
       },
       {
         "id": "f59",
@@ -505,7 +508,8 @@ window.SCHEMA = [
         "id": "f67",
         "label": "LDI装置メーカー\n保有台数",
         "sub": "メーカー名\n○ライン（合計□台）",
-        "example": "●●\n2ライン（合計4台）"
+        "example": "●●\n2ライン（合計4台）",
+        "equip": true
       },
       {
         "id": "f68",
@@ -559,7 +563,8 @@ window.SCHEMA = [
         "id": "f73",
         "label": "LDI装置メーカー\n保有台数",
         "sub": "メーカー名\n○ライン（合計□台）",
-        "example": "●●\n2ライン（合計4台）"
+        "example": "●●\n2ライン（合計4台）",
+        "equip": true
       },
       {
         "id": "f74",
@@ -651,13 +656,15 @@ window.SCHEMA = [
         "id": "f83",
         "label": "DI装置メーカー\n保有台数",
         "sub": "メーカー名\n○ライン（合計□台）",
-        "example": "●●\n2ライン（合計4台）"
+        "example": "●●\n2ライン（合計4台）",
+        "equip": true
       },
       {
         "id": "f84",
         "label": "DI装置メーカー\n保有台数",
         "sub": "メーカー名\n●ライン（合計■台）",
-        "example": "●●\n0ライン（合計2台）"
+        "example": "●●\n0ライン（合計2台）",
+        "equip": true
       },
       {
         "id": "f85",
@@ -1203,13 +1210,15 @@ window.SCHEMA = [
         "label": "外観検査",
         "sub": "AVI装置メーカー\n型番/分解能/台数",
         "note": "保有している装置メーカー全て記載\n不足なら行を追加して下さい",
-        "example": "白井\nVISPER710SLZ /25um/ 5台"
+        "example": "白井\nVISPER710SLZ /25um/ 5台",
+        "equip": true
       },
       {
         "id": "f148",
         "label": "外観検査",
         "sub": "AVI装置メーカー\n型番/分解能/台数",
-        "example": "Machvision\nAF16-3045-10-A/20um / 3台"
+        "example": "Machvision\nAF16-3045-10-A/20um / 3台",
+        "equip": true
       }
     ]
   },
