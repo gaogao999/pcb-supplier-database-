@@ -1,0 +1,492 @@
+[
+  {
+    "id": "sample-tsb",
+    "name": "TSB工場",
+    "factory": "本社工場",
+    "location": "（記入例）",
+    "country": "—",
+    "rating": 4,
+    "tags": [
+      "記入例",
+      "車載",
+      "HDI"
+    ],
+    "status": "サンプル",
+    "date": "2023-10-10",
+    "updatedAt": "2023-10-10",
+    "visits": [
+      {
+        "date": "2023-10-10",
+        "author": "（記入例）",
+        "memo": "KAGA基板工場調査表 記入例データ。各項目の入力例として参照してください。"
+      }
+    ],
+    "fields": {
+      "f1": {
+        "value": "1000人"
+      },
+      "f2": {
+        "value": "20万m2/月"
+      },
+      "f3": {
+        "value": "車載40%：通信30%：民生20％：他10％"
+      },
+      "f4": {
+        "value": "SONY、Canon、A社、B社、D社"
+      },
+      "f5": {
+        "value": "Nanya、生益、TUC"
+      },
+      "f6": {
+        "value": "Nanya、生益、TUC"
+      },
+      "f7": {
+        "value": "EMC、TUC"
+      },
+      "f8": {
+        "value": "華正"
+      },
+      "f9": {
+        "value": "ISO9001/ISO14001 /IATF16949"
+      },
+      "f10": {
+        "value": "E******"
+      },
+      "f11": {
+        "value": "12"
+      },
+      "f12": {
+        "value": "3+8+3　／ 10層Any layer"
+      },
+      "f13": {
+        "value": "テンティング法"
+      },
+      "f14": {
+        "value": "MSAP"
+      },
+      "f15": {
+        "value": "500 ｘ 600 mm"
+      },
+      "f16": {
+        "value": "120 ｘ 120 mm"
+      },
+      "f17": {
+        "value": "定尺サイズ"
+      },
+      "f18": {
+        "value": "0.2～2.5mm"
+      },
+      "f19": {
+        "value": "50um+12/12um"
+      },
+      "f20": {
+        "value": "40um"
+      },
+      "f21": {
+        "value": "1～3oz"
+      },
+      "f22": {
+        "value": "1/2～2oz"
+      },
+      "f23": {
+        "value": "HITACHIx50台（200Krpm）\nSchmollx30台（160Krpm）"
+      },
+      "f24": {
+        "value": "Union tool"
+      },
+      "f25": {
+        "value": "外注研磨"
+      },
+      "f26": {
+        "value": "φ0.15mm"
+      },
+      "f27": {
+        "value": "φ0.4mm @ 0.15mm"
+      },
+      "f28": {
+        "value": "0.35mm"
+      },
+      "f29": {
+        "value": "±0.05mm"
+      },
+      "f30": {
+        "value": "8:1"
+      },
+      "f31": {
+        "value": "HITACHIx5台（LUC-2K）\n三菱x10台（GTW6）"
+      },
+      "f32": {
+        "value": "75um"
+      },
+      "f33": {
+        "value": "最小Via径（0.075）＋0.15mm"
+      },
+      "f34": {
+        "value": "最小Via径（0.075）＋0.2mm"
+      },
+      "f35": {
+        "value": "0.2mm"
+      },
+      "f36": {
+        "value": "可 available"
+      },
+      "f37": {
+        "value": "80％以上"
+      },
+      "f38": {
+        "value": "±25um"
+      },
+      "f39": {
+        "value": "0.75:1"
+      },
+      "f40": {
+        "value": "1ライン PTH一貫ライン：0.25-0.35mg/cm²"
+      },
+      "f41": {
+        "value": "1ライン：0.25-0.35mg/cm²"
+      },
+      "f42": {
+        "value": "2台：0.15－0.35g＠テスト板"
+      },
+      "f43": {
+        "value": "0.35mm"
+      },
+      "f44": {
+        "value": "ほぼ自動、自動分析装置なし"
+      },
+      "f45": {
+        "value": "2ライン　デスミア/PTH一貫ライン"
+      },
+      "f46": {
+        "value": "1ライン"
+      },
+      "f47": {
+        "value": "2ライン"
+      },
+      "f48": {
+        "value": "20枚、専用銅張り板（穴あり）\n基材が見えたら交換"
+      },
+      "f49": {
+        "value": "0.35mm"
+      },
+      "f50": {
+        "value": "2ライン（±3um)"
+      },
+      "f51": {
+        "value": "2ライン（±3um)"
+      },
+      "f52": {
+        "value": "2ライン（±7um)"
+      },
+      "f53": {
+        "value": "断面観察/1WPNL/ロット"
+      },
+      "f54": {
+        "value": "0.2mm"
+      },
+      "f55": {
+        "value": "0.35mm"
+      },
+      "f56": {
+        "value": "0.2mm"
+      },
+      "f57": {
+        "value": "有り"
+      },
+      "f58": {
+        "value": "60/60 × 40um"
+      },
+      "f59": {
+        "value": "60/60 × 40um"
+      },
+      "f60": {
+        "value": "45/45 × 12um(M-SAP）"
+      },
+      "f61": {
+        "value": "50/50 x  23um"
+      },
+      "f62": {
+        "value": "実績なし"
+      },
+      "f63": {
+        "value": "Dupon、Eternal"
+      },
+      "f64": {
+        "value": "有り"
+      },
+      "f65": {
+        "value": "無し"
+      },
+      "f66": {
+        "value": "ソフトエッチング"
+      },
+      "f67": {
+        "value": "●●\n2ライン（合計4台）"
+      },
+      "f68": {
+        "value": "5台"
+      },
+      "f69": {
+        "value": "Dupon、Eternal"
+      },
+      "f70": {
+        "value": "有り"
+      },
+      "f71": {
+        "value": "無し"
+      },
+      "f72": {
+        "value": "ソフトエッチング"
+      },
+      "f73": {
+        "value": "●●\n2ライン（合計4台）"
+      },
+      "f74": {
+        "value": "5台"
+      },
+      "f75": {
+        "value": "Dupon、Eternal"
+      },
+      "f76": {
+        "value": "有り"
+      },
+      "f77": {
+        "value": "無し"
+      },
+      "f78": {
+        "value": "ブラシ＋パーミス／ブラシ＋化学処理"
+      },
+      "f79": {
+        "value": "スクリーン印刷とスプレーコーター"
+      },
+      "f80": {
+        "value": "無し"
+      },
+      "f81": {
+        "value": "無し"
+      },
+      "f82": {
+        "value": "5台"
+      },
+      "f83": {
+        "value": "●●\n2ライン（合計4台）"
+      },
+      "f84": {
+        "value": "●●\n0ライン（合計2台）"
+      },
+      "f85": {
+        "value": "±0.05mm"
+      },
+      "f86": {
+        "value": "±0.025mm"
+      },
+      "f87": {
+        "value": "0.050mm"
+      },
+      "f88": {
+        "value": "0.1mm"
+      },
+      "f89": {
+        "value": "0.15mm"
+      },
+      "f90": {
+        "value": "25um"
+      },
+      "f91": {
+        "value": "SONY：太陽・PSR-2000 SP200HF"
+      },
+      "f92": {
+        "value": "Canon：炎墨・SR-500 HG56"
+      },
+      "f93": {
+        "value": "可 available"
+      },
+      "f94": {
+        "value": "インクジェット、スクリーン"
+      },
+      "f95": {
+        "value": "±0.05mm"
+      },
+      "f96": {
+        "value": "●●・■"
+      },
+      "f97": {
+        "value": "黒・○○・□"
+      },
+      "f98": {
+        "value": "0.1mm"
+      },
+      "f99": {
+        "value": "±0.1mm"
+      },
+      "f100": {
+        "value": "無し"
+      },
+      "f101": {
+        "value": "可、半田剥離法で対応"
+      },
+      "f102": {
+        "value": "可 available"
+      },
+      "f103": {
+        "value": "Entek Plus HT"
+      },
+      "f104": {
+        "value": "6か月"
+      },
+      "f105": {
+        "value": "可 available"
+      },
+      "f106": {
+        "value": "1年"
+      },
+      "f107": {
+        "value": "不可 not available"
+      },
+      "f108": {
+        "value": "不可 not available"
+      },
+      "f109": {
+        "value": "可 available"
+      },
+      "f110": {
+        "value": "可 available"
+      },
+      "f111": {
+        "value": "無電解Agメッキ、カーボン印刷"
+      },
+      "f112": {
+        "value": "クラス　1000"
+      },
+      "f113": {
+        "value": "クラス　1000"
+      },
+      "f114": {
+        "value": "クラス　10,000"
+      },
+      "f115": {
+        "value": "クラス　100"
+      },
+      "f116": {
+        "value": "クラス　10万"
+      },
+      "f117": {
+        "value": "AOI"
+      },
+      "f118": {
+        "value": "インライン"
+      },
+      "f119": {
+        "value": "抜き取り Random inspection"
+      },
+      "f120": {
+        "value": "パネル"
+      },
+      "f121": {
+        "value": "20um"
+      },
+      "f122": {
+        "value": "0.5秒"
+      },
+      "f123": {
+        "value": "50倍"
+      },
+      "f124": {
+        "value": "目視 Visual check only"
+      },
+      "f125": {
+        "value": "インライン"
+      },
+      "f126": {
+        "value": "抜き取り Random inspection"
+      },
+      "f127": {
+        "value": "パネル"
+      },
+      "f128": {
+        "value": "20um"
+      },
+      "f129": {
+        "value": "0.5秒"
+      },
+      "f130": {
+        "value": "50倍"
+      },
+      "f131": {
+        "value": "毎ロット"
+      },
+      "f132": {
+        "value": "CMI厚み測定：5点/面/5WPNL/ロット\n断面観察：1WPNL/ロット"
+      },
+      "f133": {
+        "value": "ホールチェッカー：最下基板＊全軸\nX線検査：最上基板＊全軸\nフィルム検査：最下＊全軸"
+      },
+      "f134": {
+        "value": "目視 Visual check only"
+      },
+      "f135": {
+        "value": "0.1"
+      },
+      "f136": {
+        "value": "ﾚｰｻﾞｰﾄﾞﾘﾙ→ﾌﾟﾗｽﾞﾏ→Hole AOI→ﾃﾞｽﾐｱ/PTH"
+      },
+      "f137": {
+        "value": "パネル"
+      },
+      "f138": {
+        "value": "0.1"
+      },
+      "f139": {
+        "value": "目視 Visual check only"
+      },
+      "f140": {
+        "value": "抜き取り Random inspection"
+      },
+      "f141": {
+        "value": "パネル"
+      },
+      "f142": {
+        "value": "±10％"
+      },
+      "f143": {
+        "value": "10台"
+      },
+      "f144": {
+        "value": "5台"
+      },
+      "f145": {
+        "value": "3台"
+      },
+      "f146": {
+        "value": "1台"
+      },
+      "f147": {
+        "value": "白井\nVISPER710SLZ /25um/ 5台"
+      },
+      "f148": {
+        "value": "Machvision\nAF16-3045-10-A/20um / 3台"
+      },
+      "f149": {
+        "value": "プチプチ"
+      },
+      "f150": {
+        "value": "PEパック、アルミパック"
+      },
+      "f151": {
+        "value": "可 available"
+      },
+      "f152": {
+        "value": "不可 not available"
+      },
+      "f153": {
+        "value": "不可 not available"
+      },
+      "f154": {
+        "value": "可 available"
+      },
+      "f155": {
+        "value": "可 available"
+      }
+    }
+  }
+]
