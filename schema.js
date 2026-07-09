@@ -454,7 +454,7 @@ window.SCHEMA = [
         "id": "f43",
         "label": "薬液メーカー",
         "example": "0.35mm",
-        "material": true
+        "chemical": true
       },
       {
         "id": "f44",
@@ -501,7 +501,7 @@ window.SCHEMA = [
         "id": "f49",
         "label": "薬液メーカー",
         "example": "0.35mm",
-        "material": true
+        "chemical": true
       },
       {
         "id": "f50",

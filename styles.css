@@ -249,6 +249,12 @@ textarea.fi{resize:vertical;min-height:44px}
 /* 設定カード */
 .set-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
 .set-card textarea{margin-top:8px;font-size:15px;line-height:1.7}
+.set-fld{margin-top:6px;font-size:15px;line-height:1.7}
+/* 種別バッジ (設備/材料/薬液) */
+.kbadge{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;vertical-align:middle;margin-right:2px}
+.kbadge.equip{background:#4f8cff1c;color:#8fb4ff;border:1px solid #4f8cff55}
+.kbadge.material{background:#0f9d5822;color:var(--brand2);border:1px solid #0f9d5855}
+.kbadge.chemical{background:#f0b25f22;color:#e0a55e;border:1px solid #e0a55e66}
 
 /* メーカー候補サジェスト (入力欄の真下にインライン表示・横並びチップ) */
 .sugbox{
