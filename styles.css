@@ -290,6 +290,7 @@ textarea.fi{resize:vertical;min-height:44px}
   .searchbox{order:5;max-width:none;flex-basis:100%}
   .topbar-inner{padding:11px 14px;gap:9px;flex-wrap:wrap}
   #addBtn{display:none}          /* ヘッダの追加ボタンは隠し、FABに集約 */
+  #importBtn,#exportBtn{display:none}  /* モバイルでは設定ページから入出力 */
   .fab{display:flex}
   .wrap{padding:16px 14px 96px}
 
