@@ -188,6 +188,15 @@ textarea.fi{resize:vertical;min-height:44px}
 .efield .fhint{font-size:11.5px;color:var(--faint);font-weight:500;white-space:pre-line;margin-bottom:7px}
 .efield .pair{display:grid;grid-template-columns:1fr;gap:7px}
 .efield .pair input[data-k="remark"]{background:var(--card2);font-size:14px;padding:9px 12px}
+/* ワンタップ選択チップ (旧: プルダウン項目) */
+.optchips{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 8px}
+.optchip{
+  padding:9px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);
+  font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;transition:.12s;
+}
+.optchip.on{background:var(--brandDim);border-color:var(--brand);color:var(--brand2)}
+.optchip:active{transform:scale(.95)}
+.sec-edit{width:34px;height:34px;flex:none;border-radius:9px}
 .rating-input{display:flex;gap:6px;font-size:30px;cursor:pointer}
 .rating-input span{color:var(--line2);transition:.1s}
 .rating-input span.on{color:var(--star)}
@@ -231,8 +240,8 @@ textarea.fi{resize:vertical;min-height:44px}
   .sheet-head{padding:14px 15px}
   .sheet-head h2{font-size:16px}
   .sheet-foot{padding:12px 15px calc(12px + env(safe-area-inset-bottom))}
-  .sheet-foot .btn{flex:1;justify-content:center;padding:13px 10px;font-size:15px}
-  .sheet-foot .btn.ghost{flex:0 0 34%}
+  .sheet-foot .btn{flex:1;justify-content:center;padding:13px 8px;font-size:14.5px;white-space:nowrap}
+  .sheet-foot #mCancel{flex:0 0 26%}
 
   /* 詳細画面のアクションを押しやすく */
   .dh-actions{width:100%;margin-left:0}
