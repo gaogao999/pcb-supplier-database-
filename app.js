@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.4.1";
+  const APP_VERSION = "1.5.0";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -382,7 +382,7 @@
             </div>
             <div class="dh-actions">
               <button class="btn ghost sm" id="visitBtn">${svg("pin", 15)} 訪問記録を追加</button>
-              <button class="btn primary sm" id="editBtn">${svg("edit", 15)} 編集</button>
+              <button class="btn primary sm" id="editBtn">${svg("edit", 15)} 基本情報</button>
               <button class="btn danger sm" id="delBtn">${svg("trash", 15)}</button>
             </div>
           </div>
@@ -449,11 +449,13 @@
             <span class="acc-count">${secFilled}/${sec.fields.length}</span>
             <button class="iconbtn sec-edit" title="この工程を編集">${svg("edit", 14)}</button>
           </div>
-          <div class="acc-body" style="display:block">${rows || `<div class="field"><div class="field-val blank">（未記入のみ — 「未記入を隠す」を解除すると表示されます）</div></div>`}</div>
+          <div class="acc-body" style="display:block">${rows || `<div class="field"><div class="field-val blank">（未記入のみ — 「未記入を隠す」を解除すると表示されます）</div></div>`}
+            <button type="button" class="btn ghost edit-cta">${svg("edit", 15)} この工程を編集</button>
+          </div>
         </div>`;
       $("#pgPrev").onclick = () => setSec(si - 1, "r");
       $("#pgNext").onclick = () => setSec(si + 1, "l");
-      pagerEl.querySelector(".sec-edit").onclick = () => openEditor(m.id, si);
+      pagerEl.querySelectorAll(".sec-edit,.edit-cta").forEach(b => b.onclick = () => openEditor(m.id, si));
       app.querySelectorAll(".sec-tab").forEach(c => {
         const on = +c.dataset.si === si;
         c.classList.toggle("active", on);
@@ -557,7 +559,8 @@
       </details>`;
   }
 
-  // openEditor(id) = 全体編集 / openEditor(id, secIdx) = 1カテゴリだけ編集
+  // openEditor(id) = 基本情報の編集 / openEditor(id, secIdx) = 工程の編集(スワイプ・◀▶で移動)
+  // 新規はまず基本情報だけ入力 → 保存後すぐ工程1の編集シートが開き、スワイプで19工程を連続入力できる
   function openEditor(id, onlySec) {
     const isNew = !id;
     const m = isNew
@@ -566,11 +569,19 @@
     if (!m) return;
     const scoped = onlySec != null;
 
-    const secForm = scoped
-      ? secBlock(m, SCHEMA[onlySec], true)
-      : SCHEMA.map((sec, i) => secBlock(m, sec, i === 0)).join("");
-
-    const headerForm = scoped ? "" : `
+    let body;
+    if (scoped) {
+      const sec = SCHEMA[onlySec];
+      body = `
+        <div class="ed-nav">
+          <button type="button" class="iconbtn" id="edPrev" ${onlySec === 0 ? "disabled" : ""}>${svg("back", 16)}</button>
+          <span class="pn-label">${onlySec + 1} / ${SCHEMA.length}　${esc(sec.section)}</span>
+          <button type="button" class="iconbtn pg-next" id="edNext" ${onlySec === SCHEMA.length - 1 ? "disabled" : ""}>${svg("back", 16)}</button>
+        </div>
+        <div class="swipe-hint">← スワイプでも前後の工程へ移動できます（自動保存） →</div>
+        ${secBlock(m, sec, true)}`;
+    } else {
+      body = `
       <div class="form-grid">
         <div class="form-row"><label class="fl">会社名 *</label><input class="fi" id="e-name" value="${esc(m.name)}" placeholder="例: TSB工場"></div>
         <div class="form-row"><label class="fl">工場名</label><input class="fi" id="e-factory" value="${esc(m.factory || '')}" placeholder="例: 第2工場"></div>
@@ -581,24 +592,26 @@
       <div class="form-row"><label class="fl">評価</label>
         <div class="rating-input" id="e-rating">${[1,2,3,4,5].map(i => `<span class="${i <= (m.rating || 0) ? "on" : ""}" data-v="${i}">★</span>`).join("")}</div>
       </div>
-      <h3 style="margin:20px 0 10px;font-size:15px;color:var(--brand2)">調査項目 (KAGA基板工場調査表)</h3>
-      <p style="color:var(--faint);font-size:12.5px;margin:0 0 12px">選択肢はタップで入力。空欄はプレースホルダの記入例を参考に。訪問ごとに少しずつ埋めていけます。</p>`;
+      ${isNew ? `<p style="color:var(--faint);font-size:12.5px;margin:6px 0 0">保存すると、工程ごとの調査項目（全${SCHEMA.length}工程）をスワイプしながら入力できます。</p>` : ""}`;
+    }
 
     const title = scoped
-      ? `${esc(SCHEMA[onlySec].section)} — ${esc(m.name)}`
-      : (isNew ? "メーカーを追加" : `編集 — ${esc(m.name)}`);
+      ? esc(m.name)
+      : (isNew ? "メーカーを追加" : `基本情報 — ${esc(m.name)}`);
 
-    modal(title, headerForm + (scoped ? `<div class="swipe-hint">← スワイプで前後の工程へ（自動保存） →</div>` : "") + secForm, () => doSave(0));
+    modal(title, body, () => doSave(0));
 
-    // 評価 (全体編集時のみ)
+    // 評価 (基本情報編集時のみ)
     let curRating = m.rating || 0;
     const rEl = $("#e-rating");
     if (rEl) rEl.querySelectorAll("span").forEach(s => {
       s.onclick = () => { curRating = +s.dataset.v; rEl.querySelectorAll("span").forEach(x => x.classList.toggle("on", +x.dataset.v <= curRating)); };
     });
 
-    // カテゴリ編集中は左右スワイプで前後の工程へ (現在の入力は自動保存)
+    // 工程編集中: ◀▶ボタン と 左右スワイプ で前後の工程へ (現在の入力は自動保存)
     if (scoped) {
+      $("#edPrev").onclick = () => doSave(-1);
+      $("#edNext").onclick = () => doSave(1);
       const sb = modalRoot.querySelector(".sheet-body");
       let stx = 0, sty = 0;
       sb.addEventListener("touchstart", e => { stx = e.touches[0].clientX; sty = e.touches[0].clientY; }, { passive: true });
@@ -664,7 +677,7 @@
     function snapshot() {
       const vals = { hdr: {}, f: {}, eq: {} };
       ["e-name", "e-factory", "e-loc", "e-country", "e-tags"].forEach(k => { const el = $("#" + k); if (el) vals.hdr[k] = el.value; });
-      modalRoot.querySelectorAll("[data-fid]").forEach(el => { if (el.value) vals.f[el.dataset.fid + "|" + el.dataset.k] = el.value; });
+      modalRoot.querySelectorAll("input[data-fid],textarea[data-fid]").forEach(el => { if (el.value) vals.f[el.dataset.fid + "|" + el.dataset.k] = el.value; });
       modalRoot.querySelectorAll(".row-box").forEach(box => { vals.eq[box.dataset.fid] = readRows(box); });
       return vals;
     }
@@ -718,7 +731,7 @@
     function collectFields() {
       const fields = scoped ? { ...(m.fields || {}) } : {};
       if (scoped) SCHEMA[onlySec].fields.forEach(f => delete fields[f.id]);
-      modalRoot.querySelectorAll("[data-fid]").forEach(el => {
+      modalRoot.querySelectorAll("input[data-fid],textarea[data-fid]").forEach(el => {
         const fid = el.dataset.fid, k = el.dataset.k, v = el.value.trim();
         if (v) { fields[fid] = fields[fid] || {}; fields[fid][k] = v; }
       });
@@ -743,8 +756,10 @@
         m.country = $("#e-country").value.trim() || "—";
         m.tags = $("#e-tags").value.split(",").map(t => t.trim()).filter(Boolean);
         m.rating = curRating;
+        // 基本情報の保存では調査項目(m.fields)には触らない
+      } else {
+        m.fields = collectFields();
       }
-      m.fields = collectFields();
       m.updatedAt = today();
       if (isNew) { m.visits = m.visits || []; makers.push(m); }
       else { const idx = makers.findIndex(x => x.id === id); makers[idx] = m; }
@@ -760,7 +775,15 @@
         }
       }
       closeModal();
-      toast(isNew ? "メーカーを追加しました" : "保存しました");
+      if (isNew) {
+        // 新規: 詳細画面に移動し、すぐ工程1からスワイプ入力を始められるようにする
+        toast("基本情報を保存しました。工程情報を入力できます");
+        state.secIdx = 0;
+        go("maker/" + m.id); router();
+        openEditor(m.id, 0);
+        return;
+      }
+      toast("保存しました");
       go("maker/" + m.id); router();
     }
 

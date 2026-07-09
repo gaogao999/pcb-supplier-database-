@@ -238,6 +238,11 @@ textarea.fi{resize:vertical;min-height:44px}
 .eq-add{align-self:flex-start}
 .multi-tag{font-size:10px;font-weight:800;color:var(--accent);background:#4f8cff1c;border:1px solid #4f8cff44;padding:1px 7px;border-radius:999px;vertical-align:middle;margin-left:4px}
 
+/* 工程編集シートの前後ナビ */
+.ed-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 8px}
+/* 工程カード下部の編集ボタン (親指ゾーン) */
+.edit-cta{width:100%;justify-content:center;margin-top:14px;padding:12px}
+
 /* 設定カード */
 .set-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;margin-bottom:14px}
 .set-card textarea{margin-top:8px;font-size:15px;line-height:1.7}
