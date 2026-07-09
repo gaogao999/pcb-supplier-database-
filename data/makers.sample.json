@@ -196,7 +196,7 @@
         "value": "0.2mm"
       },
       "f36": {
-        "value": "可 available"
+        "value": "可"
       },
       "f37": {
         "value": "80％以上"
@@ -220,7 +220,7 @@
         "value": "0.35mm"
       },
       "f44": {
-        "value": "ほぼ自動、自動分析装置なし"
+        "value": "自動"
       },
       "f45": {
         "value": "2ライン　デスミア/PTH一貫ライン"
@@ -247,7 +247,7 @@
         "value": "2ライン（±7um)"
       },
       "f53": {
-        "value": "断面観察/1WPNL/ロット"
+        "value": "断面観察 / 1WPNL / ロット"
       },
       "f54": {
         "value": "0.2mm"
@@ -307,10 +307,10 @@
         "value": "無し"
       },
       "f78": {
-        "value": "ブラシ＋パーミス／ブラシ＋化学処理"
+        "value": "ブラシ＋パーミス"
       },
       "f79": {
-        "value": "スクリーン印刷とスプレーコーター"
+        "value": "スプレーコーター"
       },
       "f80": {
         "value": "無し"
@@ -346,10 +346,10 @@
         "value": "SONY：太陽・PSR-2000 SP200HF"
       },
       "f93": {
-        "value": "可 available"
+        "value": "可"
       },
       "f94": {
-        "value": "インクジェット、スクリーン"
+        "value": "インクジェット"
       },
       "f95": {
         "value": "±0.05mm"
@@ -367,10 +367,10 @@
         "value": "無し"
       },
       "f101": {
-        "value": "可、半田剥離法で対応"
+        "value": "可"
       },
       "f102": {
-        "value": "可 available"
+        "value": "可"
       },
       "f103": {
         "value": "Entek Plus HT"
@@ -379,37 +379,37 @@
         "value": "6か月"
       },
       "f105": {
-        "value": "可 available"
+        "value": "可"
       },
       "f106": {
         "value": "1年"
       },
       "f107": {
-        "value": "不可 not available"
+        "value": "不可"
       },
       "f108": {
-        "value": "不可 not available"
+        "value": "不可"
       },
       "f109": {
-        "value": "可 available"
+        "value": "可"
       },
       "f110": {
-        "value": "可 available"
+        "value": "可"
       },
       "f111": {
         "value": "無電解Agメッキ、カーボン印刷"
       },
       "f112": {
-        "value": "クラス　1000"
+        "value": "クラス1,000"
       },
       "f113": {
-        "value": "クラス　1000"
+        "value": "クラス1,000"
       },
       "f114": {
-        "value": "クラス　10,000"
+        "value": "クラス10,000"
       },
       "f115": {
-        "value": "クラス　100"
+        "value": "クラス100"
       },
       "f116": {
         "value": "クラス　10万"
@@ -421,7 +421,7 @@
         "value": "インライン"
       },
       "f119": {
-        "value": "抜き取り Random inspection"
+        "value": "抜き取り"
       },
       "f120": {
         "value": "パネル"
@@ -436,13 +436,13 @@
         "value": "50倍"
       },
       "f124": {
-        "value": "目視 Visual check only"
+        "value": "目視"
       },
       "f125": {
         "value": "インライン"
       },
       "f126": {
-        "value": "抜き取り Random inspection"
+        "value": "抜き取り"
       },
       "f127": {
         "value": "パネル"
@@ -466,7 +466,7 @@
         "value": "ホールチェッカー：最下基板＊全軸\nX線検査：最上基板＊全軸\nフィルム検査：最下＊全軸"
       },
       "f134": {
-        "value": "目視 Visual check only"
+        "value": "目視"
       },
       "f135": {
         "value": "0.1"
@@ -481,10 +481,10 @@
         "value": "0.1"
       },
       "f139": {
-        "value": "目視 Visual check only"
+        "value": "目視"
       },
       "f140": {
-        "value": "抜き取り Random inspection"
+        "value": "抜き取り"
       },
       "f141": {
         "value": "パネル"
@@ -514,19 +514,19 @@
         "value": "PEパック / アルミパック"
       },
       "f151": {
-        "value": "可 available"
+        "value": "可"
       },
       "f152": {
-        "value": "不可 not available"
+        "value": "不可"
       },
       "f153": {
-        "value": "不可 not available"
+        "value": "不可"
       },
       "f154": {
-        "value": "可 available"
+        "value": "可"
       },
       "f155": {
-        "value": "可 available"
+        "value": "可"
       }
     }
   }
