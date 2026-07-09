@@ -89,14 +89,23 @@ window.SCHEMA = [
         "label": "サブトラクティブ パターン形成工法",
         "sub": "印刷法,テンティング法,半田剥離法",
         "note": "プルダウンから選択してください",
-        "example": "テンティング法"
+        "example": "テンティング法",
+        "opts": [
+          "印刷法",
+          "テンティング法",
+          "半田剥離法"
+        ]
       },
       {
         "id": "f14",
         "label": "セミアディティブ パターン形成工法",
         "sub": "MSAP,SAP",
         "note": "プルダウンから選択してください",
-        "example": "MSAP"
+        "example": "MSAP",
+        "opts": [
+          "MSAP",
+          "SAP"
+        ]
       },
       {
         "id": "f15",
@@ -115,7 +124,11 @@ window.SCHEMA = [
         "label": "積層サイズ",
         "sub": "定尺 or WPNLサイズ",
         "note": "プルダウンから選択してください",
-        "example": "定尺サイズ"
+        "example": "定尺サイズ",
+        "opts": [
+          "定尺サイズ",
+          "WPNLサイズ"
+        ]
       }
     ]
   },
@@ -173,7 +186,12 @@ window.SCHEMA = [
         "id": "f25",
         "label": "リシャープ方法",
         "note": "プルダウンから選択してください",
-        "example": "外注研磨"
+        "example": "外注研磨",
+        "opts": [
+          "自社研磨",
+          "外注研磨",
+          "使い捨て"
+        ]
       },
       {
         "id": "f26",
@@ -242,7 +260,11 @@ window.SCHEMA = [
         "id": "f36",
         "label": "Stack Via",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f37",
@@ -299,7 +321,12 @@ window.SCHEMA = [
         "id": "f44",
         "label": "薬液添加（自動 or 手動）",
         "sub": "自動分析装置の有無",
-        "example": "ほぼ自動、自動分析装置なし"
+        "example": "ほぼ自動、自動分析装置なし",
+        "opts": [
+          "自動",
+          "手動",
+          "半自動"
+        ]
       },
       {
         "id": "f45",
@@ -359,13 +386,21 @@ window.SCHEMA = [
         "label": "フィルドメッキ方法",
         "sub": "フィルドメッキのみ or フラッシュ＋フィルドメッキ",
         "note": "プルダウンから選択してください",
-        "example": "断面観察/1WPNL/ロット"
+        "example": "断面観察/1WPNL/ロット",
+        "opts": [
+          "フィルドメッキのみ",
+          "フラッシュ＋フィルドメッキ"
+        ]
       },
       {
         "id": "f54",
         "label": "パルスメッキの有無",
         "note": "プルダウンから選択してください",
-        "example": "0.2mm"
+        "example": "0.2mm",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       }
     ]
   },
@@ -394,7 +429,11 @@ window.SCHEMA = [
         "id": "f57",
         "label": "LDI露光装置の有無",
         "note": "プルダウンから選択してください",
-        "example": "有り"
+        "example": "有り",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       },
       {
         "id": "f58",
@@ -435,13 +474,21 @@ window.SCHEMA = [
         "id": "f64",
         "label": "バキュームエッチングラインの有無",
         "note": "プルダウンから選択してください",
-        "example": "有り"
+        "example": "有り",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       },
       {
         "id": "f65",
         "label": "2流体エッチングラインの有無",
         "note": "プルダウンから選択してください",
-        "example": "無し"
+        "example": "無し",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       }
     ]
   },
@@ -470,19 +517,32 @@ window.SCHEMA = [
         "id": "f69",
         "label": "液レジorドライフィルム",
         "sub": "ドライフィルムの場合メーカー名",
-        "example": "Dupon、Eternal"
+        "example": "Dupon、Eternal",
+        "opts": [
+          "液体レジスト",
+          "ドライフィルム",
+          "両方"
+        ]
       },
       {
         "id": "f70",
         "label": "バキュームエッチングラインの有無",
         "note": "プルダウンから選択してください",
-        "example": "有り"
+        "example": "有り",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       },
       {
         "id": "f71",
         "label": "2流体エッチングラインの有無",
         "note": "プルダウンから選択してください",
-        "example": "無し"
+        "example": "無し",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       }
     ]
   },
@@ -511,19 +571,32 @@ window.SCHEMA = [
         "id": "f75",
         "label": "液レジorドライフィルム",
         "sub": "ドライフィルムの場合メーカー名",
-        "example": "Dupon、Eternal"
+        "example": "Dupon、Eternal",
+        "opts": [
+          "液体レジスト",
+          "ドライフィルム",
+          "両方"
+        ]
       },
       {
         "id": "f76",
         "label": "バキュームエッチングラインの有無",
         "note": "プルダウンから選択してください",
-        "example": "有り"
+        "example": "有り",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       },
       {
         "id": "f77",
         "label": "2流体エッチングラインの有無",
         "note": "プルダウンから選択してください",
-        "example": "無し"
+        "example": "無し",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       }
     ]
   },
@@ -540,19 +613,33 @@ window.SCHEMA = [
         "id": "f79",
         "label": "インク塗工方法",
         "sub": "スクリーン印刷/スプレーコーター/ロールコーター",
-        "example": "スクリーン印刷とスプレーコーター"
+        "example": "スクリーン印刷とスプレーコーター",
+        "opts": [
+          "スクリーン印刷",
+          "スプレーコーター",
+          "ロールコーター",
+          "併用"
+        ]
       },
       {
         "id": "f80",
         "label": "SRフィルムの有無",
         "note": "プルダウンから選択してください",
-        "example": "無し"
+        "example": "無し",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       },
       {
         "id": "f81",
         "label": "DI露光装置の有無",
         "note": "プルダウンから選択してください",
-        "example": "無し"
+        "example": "無し",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       },
       {
         "id": "f82",
@@ -626,14 +713,23 @@ window.SCHEMA = [
         "label": "インクジェット印刷の可否",
         "sub": "備考欄に使用目的を記載",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f94",
         "label": "印刷方法",
         "sub": "インクジェット/スクリーン",
         "note": "乾燥方法も説明してください",
-        "example": "インクジェット、スクリーン"
+        "example": "インクジェット、スクリーン",
+        "opts": [
+          "インクジェット",
+          "スクリーン",
+          "両方"
+        ]
       },
       {
         "id": "f95",
@@ -672,13 +768,21 @@ window.SCHEMA = [
         "id": "f100",
         "label": "金型パンチの有無",
         "note": "プルダウンから選択してください",
-        "example": "無し"
+        "example": "無し",
+        "opts": [
+          "有り",
+          "無し"
+        ]
       },
       {
         "id": "f101",
         "label": "端面THの対応可否",
         "sub": "可能な場合は方法を備考に記載",
-        "example": "可、半田剥離法で対応"
+        "example": "可、半田剥離法で対応",
+        "opts": [
+          "可",
+          "不可"
+        ]
       }
     ]
   },
@@ -690,7 +794,11 @@ window.SCHEMA = [
         "id": "f102",
         "label": "OSP可否",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f103",
@@ -706,7 +814,11 @@ window.SCHEMA = [
         "id": "f105",
         "label": "無電解Ni/Auメッキ製造可否",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f106",
@@ -718,26 +830,42 @@ window.SCHEMA = [
         "label": "電解Auメッキ（ハード）製造可否",
         "sub": "純度 99.9%",
         "note": "プルダウンから選択してください",
-        "example": "不可 not available"
+        "example": "不可 not available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f108",
         "label": "電解Auメッキ（ソフト）製造可否",
         "sub": "純度 99.99％",
         "note": "プルダウンから選択してください",
-        "example": "不可 not available"
+        "example": "不可 not available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f109",
         "label": "無電解NiPdAuメッキ　製造可否",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f110",
         "label": "無電解Snメッキ　製造可否",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f111",
@@ -756,62 +884,115 @@ window.SCHEMA = [
         "label": "露光工程の部屋のクリーン度",
         "sub": "内層回路",
         "note": "プルダウンから選択してください",
-        "example": "クラス　1000"
+        "example": "クラス　1000",
+        "opts": [
+          "クラス100",
+          "クラス1,000",
+          "クラス10,000",
+          "クラス100,000",
+          "管理なし"
+        ]
       },
       {
         "id": "f113",
         "label": "露光工程の部屋のクリーン度",
         "sub": "外層回路",
         "note": "プルダウンから選択してください",
-        "example": "クラス　1000"
+        "example": "クラス　1000",
+        "opts": [
+          "クラス100",
+          "クラス1,000",
+          "クラス10,000",
+          "クラス100,000",
+          "管理なし"
+        ]
       },
       {
         "id": "f114",
         "label": "露光工程の部屋のクリーン度",
         "sub": "ソルダーレジスト",
         "note": "プルダウンから選択してください",
-        "example": "クラス　10,000"
+        "example": "クラス　10,000",
+        "opts": [
+          "クラス100",
+          "クラス1,000",
+          "クラス10,000",
+          "クラス100,000",
+          "管理なし"
+        ]
       },
       {
         "id": "f115",
         "label": "その他のクリーン度",
         "sub": "レイアップ",
         "note": "プルダウンから選択してください",
-        "example": "クラス　100"
+        "example": "クラス　100",
+        "opts": [
+          "クラス100",
+          "クラス1,000",
+          "クラス10,000",
+          "クラス100,000",
+          "管理なし"
+        ]
       },
       {
         "id": "f116",
         "label": "その他のクリーン度",
         "sub": "外観検査",
         "note": "プルダウンから選択してください",
-        "example": "クラス　10万"
+        "example": "クラス　10万",
+        "opts": [
+          "クラス100",
+          "クラス1,000",
+          "クラス10,000",
+          "クラス100,000",
+          "管理なし"
+        ]
       },
       {
         "id": "f117",
         "label": "内層回路検査",
         "sub": "検査方法",
         "note": "プルダウンから選択してください",
-        "example": "AOI"
+        "example": "AOI",
+        "opts": [
+          "AOI",
+          "目視",
+          "AOI＋目視"
+        ]
       },
       {
         "id": "f118",
         "label": "内層回路検査",
         "sub": "AOI SCANの方法",
-        "example": "インライン"
+        "example": "インライン",
+        "opts": [
+          "インライン",
+          "オフライン"
+        ]
       },
       {
         "id": "f119",
         "label": "内層回路検査",
         "sub": "頻度",
         "note": "プルダウンから選択してください",
-        "example": "抜き取り Random inspection"
+        "example": "抜き取り Random inspection",
+        "opts": [
+          "全数",
+          "抜き取り"
+        ]
       },
       {
         "id": "f120",
         "label": "内層回路検査",
         "sub": "抜き取りの場合の単位",
         "note": "単位を明記してください",
-        "example": "パネル"
+        "example": "パネル",
+        "opts": [
+          "パネル",
+          "ロット",
+          "枚"
+        ]
       },
       {
         "id": "f121",
@@ -836,27 +1017,45 @@ window.SCHEMA = [
         "label": "外層回路検査",
         "sub": "検査方法",
         "note": "プルダウンから選択してください",
-        "example": "目視 Visual check only"
+        "example": "目視 Visual check only",
+        "opts": [
+          "AOI",
+          "目視",
+          "AOI＋目視"
+        ]
       },
       {
         "id": "f125",
         "label": "外層回路検査",
         "sub": "AOI SCANの方法",
-        "example": "インライン"
+        "example": "インライン",
+        "opts": [
+          "インライン",
+          "オフライン"
+        ]
       },
       {
         "id": "f126",
         "label": "外層回路検査",
         "sub": "頻度",
         "note": "プルダウンから選択してください",
-        "example": "抜き取り Random inspection"
+        "example": "抜き取り Random inspection",
+        "opts": [
+          "全数",
+          "抜き取り"
+        ]
       },
       {
         "id": "f127",
         "label": "外層回路検査",
         "sub": "抜き取りの場合の単位",
         "note": "単位を明記してください",
-        "example": "パネル"
+        "example": "パネル",
+        "opts": [
+          "パネル",
+          "ロット",
+          "枚"
+        ]
       },
       {
         "id": "f128",
@@ -899,7 +1098,12 @@ window.SCHEMA = [
         "label": "レーザーVia検査",
         "sub": "現像後の検査方法",
         "note": "プルダウンから選択してください",
-        "example": "目視 Visual check only"
+        "example": "目視 Visual check only",
+        "opts": [
+          "Hole AOI",
+          "目視",
+          "なし"
+        ]
       },
       {
         "id": "f135",
@@ -933,21 +1137,35 @@ window.SCHEMA = [
         "label": "反り検査",
         "sub": "検査方法",
         "note": "プルダウンから選択してください",
-        "example": "目視 Visual check only"
+        "example": "目視 Visual check only",
+        "opts": [
+          "目視",
+          "治具測定",
+          "自動測定"
+        ]
       },
       {
         "id": "f140",
         "label": "反り検査",
         "sub": "頻度",
         "note": "プルダウンから選択してください",
-        "example": "抜き取り Random inspection"
+        "example": "抜き取り Random inspection",
+        "opts": [
+          "全数",
+          "抜き取り"
+        ]
       },
       {
         "id": "f141",
         "label": "反り検査",
         "sub": "抜き取りの場合の単位",
         "note": "単位を明記してください",
-        "example": "パネル"
+        "example": "パネル",
+        "opts": [
+          "パネル",
+          "ロット",
+          "枚"
+        ]
       },
       {
         "id": "f142",
@@ -1003,13 +1221,25 @@ window.SCHEMA = [
         "id": "f149",
         "label": "推奨方法",
         "note": "プルダウンから選択してください",
-        "example": "プチプチ"
+        "example": "プチプチ",
+        "opts": [
+          "プチプチ",
+          "PEパック",
+          "アルミパック",
+          "真空パック"
+        ]
       },
       {
         "id": "f150",
         "label": "その他の対応可能な方法",
         "note": "プルダウンから選択してください",
-        "example": "PEパック、アルミパック"
+        "example": "PEパック、アルミパック",
+        "opts": [
+          "PEパック",
+          "アルミパック",
+          "真空パック",
+          "プチプチ"
+        ]
       }
     ]
   },
@@ -1021,31 +1251,51 @@ window.SCHEMA = [
         "id": "f151",
         "label": "コアレス",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f152",
         "label": "プラズマデスミア処理",
         "note": "プルダウンから選択してください",
-        "example": "不可 not available"
+        "example": "不可 not available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f153",
         "label": "バックドリル",
         "note": "プルダウンから選択してください",
-        "example": "不可 not available"
+        "example": "不可 not available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f154",
         "label": "リフロースクリーニング可否(出荷前のビア断線確認)",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       },
       {
         "id": "f155",
         "label": "QR印字対応可否",
         "note": "プルダウンから選択してください",
-        "example": "可 available"
+        "example": "可 available",
+        "opts": [
+          "可",
+          "不可"
+        ]
       }
     ]
   }

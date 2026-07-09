@@ -231,6 +231,7 @@
       const rows = sec.fields.map(f => {
         const d = (m.fields && m.fields[f.id]) || {};
         const val = d.value && String(d.value).trim();
+        if (state.hideEmpty && !val && !d.remark) return "";
         return `<div class="field">
           <div class="field-label">${esc(f.label)}</div>
           ${f.sub ? `<div class="field-sub">${esc(f.sub)}</div>` : ""}
@@ -243,9 +244,10 @@
           <div class="acc-ico">${svg(sec.icon, 18)}</div>
           <h3>${esc(sec.section)}</h3>
           <span class="acc-count">${secFilled}/${sec.fields.length}</span>
+          <button class="iconbtn sec-edit" data-si="${si}" title="このカテゴリを編集">${svg("edit", 14)}</button>
           <span class="acc-chevron">${svg("chevron", 18)}</span>
         </div>
-        <div class="acc-body">${rows}</div>
+        <div class="acc-body">${rows || `<div class="field"><div class="field-val blank">（未記入のみ — 「未記入を隠す」を解除すると表示されます）</div></div>`}</div>
       </div>`;
     }).join("");
 
@@ -292,13 +294,15 @@
           <div class="acc-body" style="display:block">${timeline}</div>
         </div>
 
-        <div class="section-nav">${navChips}</div>
+        <div class="section-nav"><span class="chip ${state.hideEmpty ? "active" : ""}" id="heChip">未記入を隠す</span>${navChips}</div>
         ${sections}
       </div>`;
     bindTop();
     $("#editBtn").onclick = () => openEditor(m.id);
     $("#delBtn").onclick = () => delMaker(m.id);
     $("#visitBtn").onclick = $("#visitBtn2").onclick = () => openVisit(m.id);
+    $("#heChip").onclick = () => { state.hideEmpty = !state.hideEmpty; renderDetail(id); };
+    app.querySelectorAll(".sec-edit").forEach(b => b.onclick = (e) => { e.stopPropagation(); openEditor(m.id, +b.dataset.si); });
   }
   window.__toggleSec = function (el) {
     const acc = el.closest(".acc");
@@ -327,32 +331,43 @@
   }
 
   /* ---------- 追加 / 編集フォーム ---------- */
-  function openEditor(id) {
-    const isNew = !id;
-    const m = isNew
-      ? { id: uid(), name: "", factory: "", location: "", country: "", rating: 0, tags: [], visits: [], fields: {}, date: today(), updatedAt: today() }
-      : JSON.parse(JSON.stringify(makers.find(x => x.id === id)));
-    if (!m) return;
-
-    const secForm = SCHEMA.map((sec, i) => `
-      <details class="edit-section" ${i === 0 ? "open" : ""}>
-        <summary><div class="acc-ico">${svg(sec.icon, 15)}</div>${esc(sec.section)} <span class="acc-count" style="margin-left:auto">${sec.fields.length}項目</span></summary>
+  // 1カテゴリ分の入力ブロックを生成（選択肢のある項目はチップ表示）
+  function secBlock(m, sec, open) {
+    const filled = sec.fields.filter(f => m.fields && m.fields[f.id] && m.fields[f.id].value).length;
+    return `
+      <details class="edit-section" ${open ? "open" : ""}>
+        <summary><div class="acc-ico">${svg(sec.icon, 15)}</div>${esc(sec.section)} <span class="acc-count" style="margin-left:auto">${filled}/${sec.fields.length} 記入</span></summary>
         <div class="es-body">
           ${sec.fields.map(f => {
             const d = (m.fields && m.fields[f.id]) || {};
             return `<div class="efield">
               <label class="fl">${esc(f.label)}</label>
               ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
+              ${f.opts ? `<div class="optchips" data-for="${f.id}">${f.opts.map(o => `<span class="optchip ${(d.value || "").trim() === o ? "on" : ""}" data-val="${esc(o)}">${esc(o)}</span>`).join("")}</div>` : ""}
               <div class="pair">
                 <textarea class="fi" data-fid="${f.id}" data-k="value" rows="1" placeholder="${esc(f.example ? "例: " + f.example : "")}">${esc(d.value || "")}</textarea>
-                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足${f.note ? " — " + esc(f.note) : ""}" value="${esc(d.remark || "")}">
+                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足${f.note && !f.opts ? " — " + esc(f.note) : ""}" value="${esc(d.remark || "")}">
               </div>
             </div>`;
           }).join("")}
         </div>
-      </details>`).join("");
+      </details>`;
+  }
 
-    const body = `
+  // openEditor(id) = 全体編集 / openEditor(id, secIdx) = 1カテゴリだけ編集
+  function openEditor(id, onlySec) {
+    const isNew = !id;
+    const m = isNew
+      ? { id: uid(), name: "", factory: "", location: "", country: "", rating: 0, tags: [], visits: [], fields: {}, date: today(), updatedAt: today() }
+      : JSON.parse(JSON.stringify(makers.find(x => x.id === id)));
+    if (!m) return;
+    const scoped = onlySec != null;
+
+    const secForm = scoped
+      ? secBlock(m, SCHEMA[onlySec], true)
+      : SCHEMA.map((sec, i) => secBlock(m, sec, i === 0)).join("");
+
+    const headerForm = scoped ? "" : `
       <div class="form-grid">
         <div class="form-row"><label class="fl">会社名 *</label><input class="fi" id="e-name" value="${esc(m.name)}" placeholder="例: TSB工場"></div>
         <div class="form-row"><label class="fl">工場名</label><input class="fi" id="e-factory" value="${esc(m.factory || '')}" placeholder="例: 第2工場"></div>
@@ -364,39 +379,121 @@
         <div class="rating-input" id="e-rating">${[1,2,3,4,5].map(i => `<span class="${i <= (m.rating || 0) ? "on" : ""}" data-v="${i}">★</span>`).join("")}</div>
       </div>
       <h3 style="margin:20px 0 10px;font-size:15px;color:var(--brand2)">調査項目 (KAGA基板工場調査表)</h3>
-      <p style="color:var(--faint);font-size:12.5px;margin:0 0 12px">各項目に上段=回答、下段=備考。空欄はプレースホルダの記入例を参考に。訪問ごとに少しずつ埋めていけます。</p>
-      ${secForm}`;
+      <p style="color:var(--faint);font-size:12.5px;margin:0 0 12px">選択肢はタップで入力。空欄はプレースホルダの記入例を参考に。訪問ごとに少しずつ埋めていけます。</p>`;
 
-    modal(isNew ? "メーカーを追加" : `編集 — ${esc(m.name)}`, body, () => {
-      const name = $("#e-name").value.trim();
-      if (!name) { toast("会社名を入力してください"); return false; }
-      m.name = name;
-      m.factory = $("#e-factory").value.trim();
-      m.location = $("#e-loc").value.trim();
-      m.country = $("#e-country").value.trim() || "—";
-      m.tags = $("#e-tags").value.split(",").map(t => t.trim()).filter(Boolean);
-      m.rating = curRating;
-      const fields = {};
+    const title = scoped
+      ? `${esc(SCHEMA[onlySec].section)} — ${esc(m.name)}`
+      : (isNew ? "メーカーを追加" : `編集 — ${esc(m.name)}`);
+
+    modal(title, headerForm + secForm, () => doSave(false));
+
+    // 評価 (全体編集時のみ)
+    let curRating = m.rating || 0;
+    const rEl = $("#e-rating");
+    if (rEl) rEl.querySelectorAll("span").forEach(s => {
+      s.onclick = () => { curRating = +s.dataset.v; rEl.querySelectorAll("span").forEach(x => x.classList.toggle("on", +x.dataset.v <= curRating)); };
+    });
+
+    // カテゴリ編集時は「保存して次へ」で順番に埋められる (現場入力の流れを止めない)
+    if (scoped && onlySec < SCHEMA.length - 1) {
+      const foot = modalRoot.querySelector(".sheet-foot");
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "btn primary"; nextBtn.id = "mSaveNext";
+      nextBtn.innerHTML = `保存して次へ ${svg("chevron", 14)}`;
+      foot.appendChild(nextBtn);
+      nextBtn.onclick = () => doSave(true);
+      const sv = $("#mSave"); sv.classList.remove("primary"); sv.classList.add("ghost");
+    }
+
+    // 選択チップ: タップで回答をセット、同じチップ再タップで解除
+    function syncChips() {
+      modalRoot.querySelectorAll(".optchips").forEach(g => {
+        const ta = modalRoot.querySelector(`textarea[data-fid="${g.dataset.for}"][data-k="value"]`);
+        const v = ta ? ta.value.trim() : "";
+        g.querySelectorAll(".optchip").forEach(c => c.classList.toggle("on", c.dataset.val === v));
+      });
+    }
+    modalRoot.querySelectorAll(".optchip").forEach(c => c.onclick = () => {
+      const g = c.closest(".optchips");
+      const ta = modalRoot.querySelector(`textarea[data-fid="${g.dataset.for}"][data-k="value"]`);
+      if (!ta) return;
+      ta.value = (ta.value.trim() === c.dataset.val) ? "" : c.dataset.val;
+      ta.dispatchEvent(new Event("input", { bubbles: true }));
+      syncChips();
+    });
+
+    // 下書き自動保存 (入力途中で閉じても復元できる)
+    const DKEY = "pcb_draft_v1";
+    const dtag = (isNew ? "new" : id) + ":" + (scoped ? onlySec : "all");
+    function snapshot() {
+      const vals = { hdr: {}, f: {} };
+      ["e-name", "e-factory", "e-loc", "e-country", "e-tags"].forEach(k => { const el = $("#" + k); if (el) vals.hdr[k] = el.value; });
+      modalRoot.querySelectorAll("[data-fid]").forEach(el => { if (el.value) vals.f[el.dataset.fid + "|" + el.dataset.k] = el.value; });
+      return vals;
+    }
+    function applySnap(vals) {
+      Object.entries(vals.hdr || {}).forEach(([k, v]) => { const el = $("#" + k); if (el) el.value = v; });
+      Object.entries(vals.f || {}).forEach(([kk, v]) => {
+        const [fid, k] = kk.split("|");
+        const el = modalRoot.querySelector(`[data-fid="${fid}"][data-k="${k}"]`);
+        if (el) el.value = v;
+      });
+      syncChips();
+    }
+    let dTimer = null;
+    function clearDraft() { clearTimeout(dTimer); localStorage.removeItem(DKEY); }
+    try {
+      const d = JSON.parse(localStorage.getItem(DKEY) || "null");
+      if (d && d.t === dtag && Date.now() - d.ts < 86400000) {
+        if (confirm("保存されていない下書きがあります。復元しますか？")) applySnap(d.vals);
+        else localStorage.removeItem(DKEY);
+      }
+    } catch (e) {}
+    modalRoot.querySelectorAll("input,textarea").forEach(el =>
+      el.addEventListener("input", () => {
+        clearTimeout(dTimer);
+        dTimer = setTimeout(() => localStorage.setItem(DKEY, JSON.stringify({ t: dtag, ts: Date.now(), vals: snapshot() })), 400);
+      }));
+    $("#mCancel").onclick = () => { clearDraft(); closeModal(); };
+
+    // 回答欄はDOMにある項目だけ差し替え、他カテゴリの入力は保持する
+    function collectFields() {
+      const fields = scoped ? { ...(m.fields || {}) } : {};
+      if (scoped) SCHEMA[onlySec].fields.forEach(f => delete fields[f.id]);
       modalRoot.querySelectorAll("[data-fid]").forEach(el => {
         const fid = el.dataset.fid, k = el.dataset.k, v = el.value.trim();
         if (v) { fields[fid] = fields[fid] || {}; fields[fid][k] = v; }
       });
-      // remark のみで value 空のものは残す
-      m.fields = fields;
+      return fields;
+    }
+
+    function doSave(next) {
+      if (!scoped) {
+        const name = $("#e-name").value.trim();
+        if (!name) { toast("会社名を入力してください"); return false; }
+        m.name = name;
+        m.factory = $("#e-factory").value.trim();
+        m.location = $("#e-loc").value.trim();
+        m.country = $("#e-country").value.trim() || "—";
+        m.tags = $("#e-tags").value.split(",").map(t => t.trim()).filter(Boolean);
+        m.rating = curRating;
+      }
+      m.fields = collectFields();
       m.updatedAt = today();
       if (isNew) { m.visits = m.visits || []; makers.push(m); }
       else { const idx = makers.findIndex(x => x.id === id); makers[idx] = m; }
-      save(); closeModal();
+      save(); clearDraft();
+      if (next && scoped && onlySec < SCHEMA.length - 1) {
+        toast("保存しました");
+        router();
+        openEditor(m.id, onlySec + 1);
+        return;
+      }
+      closeModal();
       toast(isNew ? "メーカーを追加しました" : "保存しました");
       go("maker/" + m.id); router();
-    });
+    }
 
-    // rating interaction
-    let curRating = m.rating || 0;
-    const rEl = $("#e-rating");
-    rEl.querySelectorAll("span").forEach(s => {
-      s.onclick = () => { curRating = +s.dataset.v; rEl.querySelectorAll("span").forEach(x => x.classList.toggle("on", +x.dataset.v <= curRating)); };
-    });
     // auto-grow textareas
     modalRoot.querySelectorAll("textarea.fi").forEach(t => {
       const grow = () => { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 200) + "px"; };
