@@ -210,6 +210,9 @@ textarea.fi{resize:vertical;min-height:44px}
 }
 .optchip.on{background:var(--brandDim);border-color:var(--brand);color:var(--brand2)}
 .optchip:active{transform:scale(.95)}
+.optchip.other-chip{border-style:dashed;color:var(--faint)}
+.optchip.other-chip.on{border-style:solid;background:var(--brandDim);border-color:var(--brand);color:var(--brand2)}
+.other-input{margin:8px 0 0}
 .sec-edit{width:34px;height:34px;flex:none;border-radius:9px}
 .rating-input{display:flex;gap:6px;font-size:30px;cursor:pointer}
 

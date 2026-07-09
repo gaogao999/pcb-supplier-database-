@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.4.0";
+  const APP_VERSION = "1.4.1";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -90,6 +90,9 @@
     return Object.values(m.fields).filter(f => f && f.value && String(f.value).trim()).length;
   }
   const TOTAL_FIELDS = SCHEMA.reduce((n, s) => n + s.fields.length, 0);
+  const FIELD = {}; SCHEMA.forEach(s => s.fields.forEach(f => { FIELD[f.id] = f; }));
+  const OTHER = "__other__";
+  const splitVals = v => (v || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
 
   /* ---------- 装置メーカー行入力 (メーカー/型番/運転方式/台数/備考) ---------- */
   const EQUIP_MODES = ["Auto", "Semi", "Manu"];
@@ -523,13 +526,19 @@
                 </div>
               </div>`;
             }
-            // 選択式 (単一/複数): チップのみ + 備考。回答の再入力欄は無し
+            // 選択式 (単一/複数): チップ + その他。回答の再入力欄は無し
             if (f.opts) {
-              const sel = (d.value || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
+              const sel = splitVals(d.value);
+              const custom = sel.filter(x => !f.opts.includes(x));
+              const otherOn = custom.length > 0;
               return `<div class="efield">
                 <label class="fl">${esc(f.label)}${f.multi ? ' <span class="multi-tag">複数選択可</span>' : ""}</label>
                 ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
-                <div class="optchips" data-for="${f.id}" data-multi="${f.multi ? 1 : 0}">${f.opts.map(o => `<span class="optchip ${sel.includes(o) ? "on" : ""}" data-val="${esc(o)}">${esc(o)}</span>`).join("")}</div>
+                <div class="optchips" data-for="${f.id}" data-multi="${f.multi ? 1 : 0}">
+                  ${f.opts.map(o => `<span class="optchip ${sel.includes(o) ? "on" : ""}" data-val="${esc(o)}">${esc(o)}</span>`).join("")}
+                  <span class="optchip other-chip ${otherOn ? "on" : ""}" data-val="${OTHER}">その他…</span>
+                </div>
+                <input class="fi other-input" data-for="${f.id}" placeholder="その他（自由入力）" value="${esc(custom.join(" / "))}" style="${otherOn ? "" : "display:none"}">
                 <input type="hidden" data-fid="${f.id}" data-k="value" value="${esc(d.value || "")}">
                 <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足" value="${esc(d.remark || "")}">
               </div>`;
@@ -602,27 +611,52 @@
       }, { passive: true });
     }
 
-    // 選択チップ: 単一=1つだけON、複数=トグルで複数ON。値は hidden input に " / " 区切りで保持
-    function chipHidden(g) { return modalRoot.querySelector(`input[type="hidden"][data-fid="${g.dataset.for}"][data-k="value"]`); }
+    // 選択チップ: 単一=1つだけON / 複数=トグル。「その他」ONで自由入力欄を表示。
+    // 値は hidden input に " / " 区切りで保持 (プリセット + その他自由入力)
+    const chipHidden = g => modalRoot.querySelector(`input[type="hidden"][data-fid="${g.dataset.for}"][data-k="value"]`);
+    const otherInput = fid => modalRoot.querySelector(`.other-input[data-for="${fid}"]`);
+    // DOM(チップ + その他入力) から hidden 値を再計算
+    function writeChipValue(g) {
+      const fid = g.dataset.for, h = chipHidden(g); if (!h) return;
+      const arr = [...g.querySelectorAll(".optchip.on")].filter(c => c.dataset.val !== OTHER).map(c => c.dataset.val);
+      const otherChip = g.querySelector(".other-chip"), oi = otherInput(fid);
+      if (otherChip && otherChip.classList.contains("on") && oi && oi.value.trim()) arr.push(...splitVals(oi.value));
+      h.value = arr.join(" / ");
+      h.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    // hidden 値 → チップ/その他入力 の状態へ (下書き復元・初期化用)
     function syncChips() {
       modalRoot.querySelectorAll(".optchips").forEach(g => {
-        const h = chipHidden(g); if (!h) return;
-        const sel = (h.value || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
-        g.querySelectorAll(".optchip").forEach(c => c.classList.toggle("on", sel.includes(c.dataset.val)));
+        const fid = g.dataset.for, h = chipHidden(g); if (!h) return;
+        const opts = (FIELD[fid] && FIELD[fid].opts) || [];
+        const sel = splitVals(h.value), custom = sel.filter(x => !opts.includes(x));
+        g.querySelectorAll(".optchip").forEach(c =>
+          c.classList.toggle("on", c.dataset.val === OTHER ? custom.length > 0 : sel.includes(c.dataset.val)));
+        const oi = otherInput(fid);
+        if (oi) { oi.style.display = custom.length > 0 ? "" : "none"; oi.value = custom.join(" / "); }
       });
     }
     modalRoot.querySelectorAll(".optchip").forEach(c => c.onclick = () => {
-      const g = c.closest(".optchips"), h = chipHidden(g);
-      if (!h) return;
-      const multi = g.dataset.multi === "1";
-      let sel = (h.value || "").split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean);
-      const v = c.dataset.val, has = sel.includes(v);
-      if (multi) sel = has ? sel.filter(x => x !== v) : [...sel, v];
-      else sel = has ? [] : [v];
-      h.value = sel.join(" / ");
-      h.dispatchEvent(new Event("input", { bubbles: true }));
-      syncChips();
+      const g = c.closest(".optchips"), multi = g.dataset.multi === "1";
+      const isOther = c.dataset.val === OTHER, oi = otherInput(g.dataset.for);
+      if (multi) {
+        c.classList.toggle("on");
+      } else {
+        const wasOn = c.classList.contains("on");
+        g.querySelectorAll(".optchip").forEach(x => x.classList.remove("on"));
+        if (!wasOn) c.classList.add("on");
+      }
+      if (oi) {
+        const otherChip = g.querySelector(".other-chip"), show = otherChip.classList.contains("on");
+        oi.style.display = show ? "" : "none";
+        if (!show) oi.value = "";
+        if (show && isOther) setTimeout(() => oi.focus(), 0);
+      }
+      writeChipValue(g);
     });
+    // 「その他」自由入力の変更を hidden に反映
+    modalRoot.querySelectorAll(".other-input").forEach(oi =>
+      oi.addEventListener("input", () => writeChipValue(oi.closest(".efield").querySelector(".optchips"))));
 
     // 下書き自動保存 (入力途中で閉じても復元できる)
     const DKEY = "pcb_draft_v1";
