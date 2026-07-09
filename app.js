@@ -137,11 +137,13 @@
           <button class="btn ghost sm" id="cmpBtn">${svg("compare", 15)} 比較</button>
         </div>
         <div class="grid" id="cards"></div>
-      </div>`;
+      </div>
+      <button class="fab" id="fab" title="メーカーを追加" aria-label="メーカーを追加">${svg("plus", 26)}</button>`;
     bindTop();
     $("#sortSel").value = state.sort;
     $("#sortSel").onchange = e => { state.sort = e.target.value; renderCards(); };
     $("#cmpBtn").onclick = () => go("compare");
+    $("#fab").onclick = () => openEditor(null);
     renderTagChips();
     renderCards();
   }
