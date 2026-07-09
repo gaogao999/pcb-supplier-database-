@@ -6,7 +6,9 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const STORE_KEY = "pcb_makers_v1";
+  const APP_VERSION = "1.3.0";
+  const APP_DATE = "2026-07-09";
+  const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
   const $ = (s, r = document) => r.querySelector(s);
   const app = $("#app");
@@ -57,11 +59,28 @@
 
   /* ---------- データ層 ---------- */
   let makers = [];
+  // 読み込み: 壊れていたら直前バックアップ→日次バックアップの順で復旧を試みる
   function load() {
-    try { makers = JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-    catch { makers = []; }
+    const tryParse = (k) => { try { const d = JSON.parse(localStorage.getItem(k)); return Array.isArray(d) ? d : null; } catch { return null; } };
+    makers = tryParse(STORE_KEY);
+    if (makers === null) {
+      makers = tryParse(STORE_KEY + "_prev") || tryParse(STORE_KEY + "_bak") || [];
+      if (makers.length) setTimeout(() => toast("バックアップからデータを復旧しました"), 600);
+    }
   }
-  function save() { localStorage.setItem(STORE_KEY, JSON.stringify(makers)); }
+  // 保存: 直前の状態を _prev に、1日1回 _bak に退避してから書き込む (更新でデータが消えない保険)
+  function save() {
+    const cur = localStorage.getItem(STORE_KEY);
+    if (cur) {
+      localStorage.setItem(STORE_KEY + "_prev", cur);
+      const day = today();
+      if (localStorage.getItem(STORE_KEY + "_bak_date") !== day) {
+        localStorage.setItem(STORE_KEY + "_bak", cur);
+        localStorage.setItem(STORE_KEY + "_bak_date", day);
+      }
+    }
+    localStorage.setItem(STORE_KEY, JSON.stringify(makers));
+  }
   const uid = () => "m" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
   const today = () => new Date().toISOString().slice(0, 10);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -71,6 +90,90 @@
     return Object.values(m.fields).filter(f => f && f.value && String(f.value).trim()).length;
   }
   const TOTAL_FIELDS = SCHEMA.reduce((n, s) => n + s.fields.length, 0);
+
+  /* ---------- 装置メーカー行入力 (メーカー/型番/運転方式/台数/備考) ---------- */
+  const EQUIP_MODES = ["自動", "セミオート", "マニュアル"];
+  function equipRowHtml(r) {
+    r = r || {};
+    return `<div class="equip-row">
+      <input class="fi er-maker" placeholder="メーカー" value="${esc(r.maker || "")}" autocomplete="off">
+      <input class="fi er-model" placeholder="型番" value="${esc(r.model || "")}">
+      <select class="fi er-mode">
+        <option value="">運転方式</option>
+        ${EQUIP_MODES.map(o => `<option ${r.mode === o ? "selected" : ""}>${o}</option>`).join("")}
+      </select>
+      <input class="fi er-qty" type="number" inputmode="numeric" min="0" placeholder="台数" value="${esc(r.qty || "")}">
+      <input class="fi er-note" placeholder="備考 (回転数・分解能など)" value="${esc(r.note || "")}">
+      <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
+    </div>`;
+  }
+  function readEquipRows(box) {
+    return [...box.querySelectorAll(".equip-row")].map(row => ({
+      maker: row.querySelector(".er-maker").value.trim(),
+      model: row.querySelector(".er-model").value.trim(),
+      mode: row.querySelector(".er-mode").value,
+      qty: row.querySelector(".er-qty").value.trim(),
+      note: row.querySelector(".er-note").value.trim(),
+    })).filter(r => r.maker || r.model || r.mode || r.qty || r.note);
+  }
+  function fmtEquipRow(r) {
+    const p = [];
+    if (r.maker) p.push(r.maker);
+    if (r.model) p.push(r.model);
+    if (r.qty) p.push(r.qty + "台");
+    if (r.mode) p.push("(" + r.mode + ")");
+    if (r.note) p.push(r.note);
+    return p.join(" ");
+  }
+  // 同じ項目(=同じ工程の装置欄)で過去に入力したメーカー名を候補に出す
+  function equipSuggestions(fid) {
+    const s = new Set();
+    makers.forEach(mk => {
+      const d = mk.fields && mk.fields[fid];
+      ((d && d.rows) || []).forEach(r => { if (r.maker) s.add(String(r.maker).trim()); });
+    });
+    return [...s].filter(Boolean);
+  }
+  // メーカー入力欄にフォーカスした時だけ出す候補ポップアップ
+  let sugBox = null;
+  function hideSug() { if (sugBox) { sugBox.remove(); sugBox = null; } }
+  function showSug(input) {
+    const box = input.closest(".equip-box"); if (!box) return;
+    const q = input.value.trim().toLowerCase();
+    const list = equipSuggestions(box.dataset.fidEq).filter(s => !q || s.toLowerCase().includes(q)).slice(0, 8);
+    hideSug();
+    if (!list.length) return;
+    sugBox = document.createElement("div");
+    sugBox.className = "sugbox";
+    sugBox.innerHTML = list.map(s => `<div class="sug-item">${esc(s)}</div>`).join("");
+    document.body.appendChild(sugBox);
+    positionSug(input);
+    sugBox.querySelectorAll(".sug-item").forEach(it => it.addEventListener("pointerdown", ev => {
+      ev.preventDefault();
+      input.value = it.textContent;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      hideSug();
+    }));
+  }
+  function positionSug(input) {
+    if (!sugBox) return;
+    const r = input.getBoundingClientRect();
+    sugBox.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 220)) + "px";
+    sugBox.style.top = (r.bottom + 4) + "px";
+    sugBox.style.minWidth = Math.min(r.width, window.innerWidth - 24) + "px";
+  }
+  // スクロール時: メーカー欄にフォーカス中なら追従、それ以外は閉じる
+  document.addEventListener("scroll", () => {
+    if (!sugBox) return;
+    const ae = document.activeElement;
+    if (ae && ae.classList && ae.classList.contains("er-maker")) positionSug(ae);
+    else hideSug();
+  }, true);
+
+  // 編集モーダル用の委任リスナー (1回だけ登録し、開いている編集画面のフックに転送)
+  let editorHooks = null;
+  ["input", "click", "focusin", "focusout"].forEach(type =>
+    modalRoot.addEventListener(type, e => { if (editorHooks && editorHooks[type]) editorHooks[type](e); }));
 
   /* ---------- ルーティング (ハッシュ) ---------- */
   function router() {
@@ -87,7 +190,7 @@
     <div class="topbar"><div class="topbar-inner">
       <div class="brand" onclick="location.hash=''">
         <img src="icon.svg" alt="">
-        <div><h1>基板メーカーDB</h1><small>SUBSTRATE MAKER DATABASE</small></div>
+        <div><h1>基板メーカーDB</h1><small>SUBSTRATE MAKER DB · v${APP_VERSION}</small></div>
       </div>
       <div class="searchbox">
         <span class="ico">${svg("search", 16)}</span>
@@ -114,6 +217,7 @@
   const state = { query: "", filter: "all", sort: "updated" };
 
   function renderList() {
+    window.onkeydown = null;
     const filled = makers.filter(m => filledCount(m) > 0).length;
     const avgFields = makers.length ? Math.round(makers.reduce((n, m) => n + filledCount(m), 0) / makers.length) : 0;
     const visits = makers.reduce((n, m) => n + (m.visits ? m.visits.length : 0), 0);
@@ -137,6 +241,9 @@
           <button class="btn ghost sm" id="cmpBtn">${svg("compare", 15)} 比較</button>
         </div>
         <div class="grid" id="cards"></div>
+        <div class="app-foot">基板メーカーDB <b>v${APP_VERSION}</b> (${APP_DATE})<br>
+        データはこの端末のブラウザ内に保存され、アプリを更新しても消えません（直前＋日次の自動バックアップ付き）。<br>
+        端末の故障や機種変更に備えて、定期的に ⬇ JSON書き出しでのバックアップをおすすめします。</div>
       </div>
       <button class="fab" id="fab" title="メーカーを追加" aria-label="メーカーを追加">${svg("plus", 26)}</button>`;
     bindTop();
@@ -223,33 +330,7 @@
     const pct = Math.round(filledCount(m) / TOTAL_FIELDS * 100);
     const initial = (m.name || "?").trim().charAt(0);
 
-    const navChips = SCHEMA.map(s => `<span class="chip" onclick="document.getElementById('sec-${s.section}').scrollIntoView({behavior:'smooth',block:'start'})">${esc(s.section)}</span>`).join("");
-
-    const sections = SCHEMA.map((sec, si) => {
-      const open = openSections[sec.section] !== false && si < 3 ? true : openSections[sec.section] === true;
-      const secFilled = sec.fields.filter(f => m.fields && m.fields[f.id] && m.fields[f.id].value).length;
-      const rows = sec.fields.map(f => {
-        const d = (m.fields && m.fields[f.id]) || {};
-        const val = d.value && String(d.value).trim();
-        if (state.hideEmpty && !val && !d.remark) return "";
-        return `<div class="field">
-          <div class="field-label">${esc(f.label)}</div>
-          ${f.sub ? `<div class="field-sub">${esc(f.sub)}</div>` : ""}
-          <div class="field-val ${val ? "" : "blank"}">${val ? esc(d.value) : "未記入"}</div>
-          ${d.remark ? `<div class="field-remark">📝 ${esc(d.remark)}</div>` : ""}
-        </div>`;
-      }).join("");
-      return `<div class="acc ${open ? "open" : ""}" id="sec-${sec.section}" data-sec="${esc(sec.section)}">
-        <div class="acc-head" onclick="window.__toggleSec(this)">
-          <div class="acc-ico">${svg(sec.icon, 18)}</div>
-          <h3>${esc(sec.section)}</h3>
-          <span class="acc-count">${secFilled}/${sec.fields.length}</span>
-          <button class="iconbtn sec-edit" data-si="${si}" title="このカテゴリを編集">${svg("edit", 14)}</button>
-          <span class="acc-chevron">${svg("chevron", 18)}</span>
-        </div>
-        <div class="acc-body">${rows || `<div class="field"><div class="field-val blank">（未記入のみ — 「未記入を隠す」を解除すると表示されます）</div></div>`}</div>
-      </div>`;
-    }).join("");
+    const navChips = SCHEMA.map((s, i) => `<span class="chip sec-tab" data-si="${i}">${esc(s.section)}</span>`).join("");
 
     const visits = (m.visits || []).slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     const timeline = visits.length ? `<div class="timeline">${visits.map(v => `
@@ -294,15 +375,82 @@
           <div class="acc-body" style="display:block">${timeline}</div>
         </div>
 
-        <div class="section-nav"><span class="chip ${state.hideEmpty ? "active" : ""}" id="heChip">未記入を隠す</span>${navChips}</div>
-        ${sections}
+        <div class="section-nav" id="secTabs"><span class="chip ${state.hideEmpty ? "active" : ""}" id="heChip">未記入を隠す</span>${navChips}</div>
+        <div class="swipe-hint">← 左右にスワイプで工程を切り替え →</div>
+        <div id="pagerWrap"></div>
       </div>`;
     bindTop();
     $("#editBtn").onclick = () => openEditor(m.id);
     $("#delBtn").onclick = () => delMaker(m.id);
     $("#visitBtn").onclick = $("#visitBtn2").onclick = () => openVisit(m.id);
     $("#heChip").onclick = () => { state.hideEmpty = !state.hideEmpty; renderDetail(id); };
-    app.querySelectorAll(".sec-edit").forEach(b => b.onclick = (e) => { e.stopPropagation(); openEditor(m.id, +b.dataset.si); });
+    app.querySelectorAll(".sec-tab").forEach(c => c.onclick = () => setSec(+c.dataset.si));
+
+    // ---- 工程ページャー: 1工程=1ページ、スワイプ/タブ/矢印で切替 ----
+    const pagerEl = $("#pagerWrap");
+    function setSec(i, dir) {
+      const t = Math.max(0, Math.min(SCHEMA.length - 1, i));
+      if (dir === undefined) dir = t > (state.secIdx || 0) ? "l" : t < (state.secIdx || 0) ? "r" : "";
+      state.secIdx = t;
+      updatePager(dir);
+    }
+    function updatePager(dir) {
+      const si = Math.max(0, Math.min(SCHEMA.length - 1, state.secIdx || 0));
+      state.secIdx = si;
+      const sec = SCHEMA[si];
+      const secFilled = sec.fields.filter(f => m.fields && m.fields[f.id] && m.fields[f.id].value).length;
+      const rows = sec.fields.map(f => {
+        const d = (m.fields && m.fields[f.id]) || {};
+        const val = d.value && String(d.value).trim();
+        if (state.hideEmpty && !val && !d.remark) return "";
+        return `<div class="field">
+          <div class="field-label">${esc(f.label)}</div>
+          ${f.sub ? `<div class="field-sub">${esc(f.sub)}</div>` : ""}
+          <div class="field-val ${val ? "" : "blank"}">${val ? esc(d.value) : "未記入"}</div>
+          ${d.remark ? `<div class="field-remark">📝 ${esc(d.remark)}</div>` : ""}
+        </div>`;
+      }).join("");
+      const anim = dir === "l" ? "slide-l" : dir === "r" ? "slide-r" : "";
+      pagerEl.innerHTML = `
+        <div class="pager-nav">
+          <button class="iconbtn" id="pgPrev" ${si === 0 ? "disabled" : ""}>${svg("back", 16)}</button>
+          <span class="pn-label">${si + 1} / ${SCHEMA.length}</span>
+          <button class="iconbtn pg-next" id="pgNext" ${si === SCHEMA.length - 1 ? "disabled" : ""}>${svg("back", 16)}</button>
+        </div>
+        <div class="acc open page-card ${anim}">
+          <div class="acc-head" style="cursor:default">
+            <div class="acc-ico">${svg(sec.icon, 18)}</div>
+            <h3>${esc(sec.section)}</h3>
+            <span class="acc-count">${secFilled}/${sec.fields.length}</span>
+            <button class="iconbtn sec-edit" title="この工程を編集">${svg("edit", 14)}</button>
+          </div>
+          <div class="acc-body" style="display:block">${rows || `<div class="field"><div class="field-val blank">（未記入のみ — 「未記入を隠す」を解除すると表示されます）</div></div>`}</div>
+        </div>`;
+      $("#pgPrev").onclick = () => setSec(si - 1, "r");
+      $("#pgNext").onclick = () => setSec(si + 1, "l");
+      pagerEl.querySelector(".sec-edit").onclick = () => openEditor(m.id, si);
+      app.querySelectorAll(".sec-tab").forEach(c => {
+        const on = +c.dataset.si === si;
+        c.classList.toggle("active", on);
+        if (on) c.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+      });
+    }
+    // スワイプ検出 (縦スクロールと区別: 横60px以上かつ横>縦x1.6)
+    let tx = 0, ty = 0;
+    pagerEl.addEventListener("touchstart", e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+    pagerEl.addEventListener("touchend", e => {
+      const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > 1.6 * Math.abs(dy)) {
+        if (dx < 0) setSec(state.secIdx + 1, "l"); else setSec(state.secIdx - 1, "r");
+      }
+    }, { passive: true });
+    // PCは ←→ キーでも切替
+    window.onkeydown = e => {
+      if (modalRoot.innerHTML || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+      if (e.key === "ArrowRight") setSec(state.secIdx + 1, "l");
+      if (e.key === "ArrowLeft") setSec(state.secIdx - 1, "r");
+    };
+    updatePager();
   }
   window.__toggleSec = function (el) {
     const acc = el.closest(".acc");
@@ -340,6 +488,18 @@
         <div class="es-body">
           ${sec.fields.map(f => {
             const d = (m.fields && m.fields[f.id]) || {};
+            if (f.equip) {
+              // 装置メーカー: メーカー/型番/運転方式/台数/備考 を行で入力、行追加可
+              const rows = (d.rows && d.rows.length) ? d.rows : (d.value ? [{ note: d.value }] : [{}]);
+              return `<div class="efield">
+                <label class="fl">${esc(f.label)}</label>
+                ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
+                <div class="equip-box" data-fid-eq="${f.id}">
+                  ${rows.map(r => equipRowHtml(r)).join("")}
+                  <button type="button" class="btn ghost sm eq-add">${svg("plus", 13)} 装置を追加</button>
+                </div>
+              </div>`;
+            }
             return `<div class="efield">
               <label class="fl">${esc(f.label)}</label>
               ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
@@ -385,7 +545,7 @@
       ? `${esc(SCHEMA[onlySec].section)} — ${esc(m.name)}`
       : (isNew ? "メーカーを追加" : `編集 — ${esc(m.name)}`);
 
-    modal(title, headerForm + secForm, () => doSave(false));
+    modal(title, headerForm + (scoped ? `<div class="swipe-hint">← スワイプで前後の工程へ（自動保存） →</div>` : "") + secForm, () => doSave(0));
 
     // 評価 (全体編集時のみ)
     let curRating = m.rating || 0;
@@ -401,8 +561,22 @@
       nextBtn.className = "btn primary"; nextBtn.id = "mSaveNext";
       nextBtn.innerHTML = `保存して次へ ${svg("chevron", 14)}`;
       foot.appendChild(nextBtn);
-      nextBtn.onclick = () => doSave(true);
+      nextBtn.onclick = () => doSave(1);
       const sv = $("#mSave"); sv.classList.remove("primary"); sv.classList.add("ghost");
+    }
+
+    // カテゴリ編集中も左右スワイプで前後の工程へ (現在の入力は自動保存)
+    if (scoped) {
+      const sb = modalRoot.querySelector(".sheet-body");
+      let stx = 0, sty = 0;
+      sb.addEventListener("touchstart", e => { stx = e.touches[0].clientX; sty = e.touches[0].clientY; }, { passive: true });
+      sb.addEventListener("touchend", e => {
+        const dx = e.changedTouches[0].clientX - stx, dy = e.changedTouches[0].clientY - sty;
+        if (Math.abs(dx) > 70 && Math.abs(dx) > 1.6 * Math.abs(dy)) {
+          if (dx < 0 && onlySec < SCHEMA.length - 1) doSave(1);
+          else if (dx > 0 && onlySec > 0) doSave(-1);
+        }
+      }, { passive: true });
     }
 
     // 選択チップ: タップで回答をセット、同じチップ再タップで解除
@@ -426,9 +600,10 @@
     const DKEY = "pcb_draft_v1";
     const dtag = (isNew ? "new" : id) + ":" + (scoped ? onlySec : "all");
     function snapshot() {
-      const vals = { hdr: {}, f: {} };
+      const vals = { hdr: {}, f: {}, eq: {} };
       ["e-name", "e-factory", "e-loc", "e-country", "e-tags"].forEach(k => { const el = $("#" + k); if (el) vals.hdr[k] = el.value; });
       modalRoot.querySelectorAll("[data-fid]").forEach(el => { if (el.value) vals.f[el.dataset.fid + "|" + el.dataset.k] = el.value; });
+      modalRoot.querySelectorAll(".equip-box").forEach(box => { vals.eq[box.dataset.fidEq] = readEquipRows(box); });
       return vals;
     }
     function applySnap(vals) {
@@ -437,6 +612,13 @@
         const [fid, k] = kk.split("|");
         const el = modalRoot.querySelector(`[data-fid="${fid}"][data-k="${k}"]`);
         if (el) el.value = v;
+      });
+      Object.entries(vals.eq || {}).forEach(([fid, rows]) => {
+        const box = modalRoot.querySelector(`.equip-box[data-fid-eq="${fid}"]`);
+        if (!box) return;
+        box.querySelectorAll(".equip-row").forEach(r => r.remove());
+        const add = box.querySelector(".eq-add");
+        (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", equipRowHtml(r)));
       });
       syncChips();
     }
@@ -449,11 +631,25 @@
         else localStorage.removeItem(DKEY);
       }
     } catch (e) {}
-    modalRoot.querySelectorAll("input,textarea").forEach(el =>
-      el.addEventListener("input", () => {
-        clearTimeout(dTimer);
-        dTimer = setTimeout(() => localStorage.setItem(DKEY, JSON.stringify({ t: dtag, ts: Date.now(), vals: snapshot() })), 400);
-      }));
+    // イベント委任 (動的に追加した装置行にも効く)。propertyで代入し重複登録を防ぐ
+    const scheduleDraft = () => {
+      clearTimeout(dTimer);
+      dTimer = setTimeout(() => localStorage.setItem(DKEY, JSON.stringify({ t: dtag, ts: Date.now(), vals: snapshot() })), 400);
+    };
+    editorHooks = {
+      input: e => {
+        scheduleDraft();
+        if (e.target.classList && e.target.classList.contains("er-maker")) showSug(e.target);
+      },
+      click: e => {
+        const del = e.target.closest(".er-del");
+        if (del) { del.closest(".equip-row").remove(); scheduleDraft(); return; }
+        const add = e.target.closest(".eq-add");
+        if (add) { add.insertAdjacentHTML("beforebegin", equipRowHtml({})); scheduleDraft(); }
+      },
+      focusin: e => { if (e.target.classList && e.target.classList.contains("er-maker")) showSug(e.target); },
+      focusout: e => { if (e.target.classList && e.target.classList.contains("er-maker")) setTimeout(hideSug, 150); },
+    };
     $("#mCancel").onclick = () => { clearDraft(); closeModal(); };
 
     // 回答欄はDOMにある項目だけ差し替え、他カテゴリの入力は保持する
@@ -464,10 +660,17 @@
         const fid = el.dataset.fid, k = el.dataset.k, v = el.value.trim();
         if (v) { fields[fid] = fields[fid] || {}; fields[fid][k] = v; }
       });
+      // 装置行: rows と、表示/比較/エクスポート用のテキスト(value)を両方保存
+      modalRoot.querySelectorAll(".equip-box").forEach(box => {
+        const fid = box.dataset.fidEq;
+        const rows = readEquipRows(box);
+        if (rows.length) fields[fid] = { rows, value: rows.map(fmtEquipRow).join("\n") };
+        else delete fields[fid];
+      });
       return fields;
     }
 
-    function doSave(next) {
+    function doSave(delta) {
       if (!scoped) {
         const name = $("#e-name").value.trim();
         if (!name) { toast("会社名を入力してください"); return false; }
@@ -483,11 +686,15 @@
       if (isNew) { m.visits = m.visits || []; makers.push(m); }
       else { const idx = makers.findIndex(x => x.id === id); makers[idx] = m; }
       save(); clearDraft();
-      if (next && scoped && onlySec < SCHEMA.length - 1) {
-        toast("保存しました");
-        router();
-        openEditor(m.id, onlySec + 1);
-        return;
+      if (delta && scoped) {
+        const t = onlySec + delta;
+        if (t >= 0 && t < SCHEMA.length) {
+          toast("保存しました");
+          state.secIdx = t;
+          router();
+          openEditor(m.id, t);
+          return;
+        }
       }
       closeModal();
       toast(isNew ? "メーカーを追加しました" : "保存しました");
@@ -509,6 +716,7 @@
 
   /* ---------- 比較画面 ---------- */
   function renderCompare() {
+    window.onkeydown = null;
     if (makers.length < 1) { go(""); return; }
     if (!state.cmp) state.cmp = makers.slice(0, Math.min(3, makers.length)).map(m => m.id);
     const opts = (sel) => makers.map(m => `<option value="${m.id}" ${sel === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("");
@@ -551,9 +759,11 @@
   let onSave = null;
   function modal(title, bodyHTML, saveFn) {
     onSave = saveFn;
+    editorHooks = null;
+    hideSug();
     modalRoot.innerHTML = `
       <div class="overlay" id="ov">
-        <div class="sheet" onclick="event.stopPropagation()">
+        <div class="sheet">
           <div class="sheet-head">
             <h2>${title}</h2>
             <button class="iconbtn" id="mClose">${svg("x")}</button>
@@ -565,13 +775,13 @@
           </div>
         </div>
       </div>`;
-    $("#ov").onclick = closeModal;
+    $("#ov").onclick = (e) => { if (e.target.id === "ov") closeModal(); };
     $("#mClose").onclick = closeModal;
     $("#mCancel").onclick = closeModal;
     $("#mSave").onclick = () => { if (onSave && onSave() === false) return; };
     document.body.style.overflow = "hidden";
   }
-  function closeModal() { modalRoot.innerHTML = ""; document.body.style.overflow = ""; }
+  function closeModal() { hideSug(); modalRoot.innerHTML = ""; document.body.style.overflow = ""; }
 
   function toast(msg) {
     const t = document.createElement("div");
