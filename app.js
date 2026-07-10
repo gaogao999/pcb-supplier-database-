@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.9.0";
+  const APP_VERSION = "1.9.1";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -235,7 +235,7 @@
       return `<label class="dm-l">${esc(fld.label)}<input class="${cls}" data-dk="${fld.key}" value="${esc(v)}" ${extra} autocomplete="off"></label>`;
     };
     return `<div class="row-item rowform-item">
-      <div class="dm-head" style="justify-content:flex-end"><button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button></div>
+      <button type="button" class="er-del rf-del" title="この行を削除">${svg("x", 13)}</button>
       ${f.rowform.cols.map(row => row.length > 1 ? `<div class="dm-grid">${row.map(cell).join("")}</div>` : cell(row[0])).join("")}
     </div>`;
   }
