@@ -428,21 +428,9 @@ window.SCHEMA = [
     "fields": [
       {
         "id": "f40",
-        "label": "設備種類：Weight loss",
-        "sub": "水平　　　○ライン",
-        "example": "1ライン PTH一貫ライン：0.25-0.35mg/cm²"
-      },
-      {
-        "id": "f41",
-        "label": "設備種類：Weight loss",
-        "sub": "バッチ式　●ライン",
-        "example": "1ライン：0.25-0.35mg/cm²"
-      },
-      {
-        "id": "f42",
-        "label": "設備種類：Weight loss",
-        "sub": "プラズマ　△台",
-        "example": "2台：0.15－0.35g＠テスト板"
+        "label": "デスミア設備",
+        "sub": "ウェット/ドライ別に、行を追加して登録",
+        "desmear": true
       }
     ]
   },
@@ -452,9 +440,66 @@ window.SCHEMA = [
     "fields": [
       {
         "id": "f43",
-        "label": "薬液メーカー",
-        "example": "0.35mm",
-        "chemical": true
+        "label": "無電解銅メッキ ライン",
+        "sub": "ライン(薬液)ごとに行を追加",
+        "rowform": {
+          "add": "ラインを追加",
+          "cols": [
+            [
+              {
+                "key": "maker",
+                "label": "薬液メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              }
+            ],
+            [
+              {
+                "key": "process",
+                "label": "プロセス種類",
+                "type": "select",
+                "opts": [
+                  "PTH",
+                  "BH",
+                  "PTH+BH",
+                  "その他"
+                ]
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ式"
+                ]
+              },
+              {
+                "key": "lines",
+                "label": "ライン数",
+                "type": "num"
+              }
+            ],
+            [
+              {
+                "key": "blFreq",
+                "label": "バックライト確認頻度"
+              }
+            ],
+            [
+              {
+                "key": "spec",
+                "label": "規格"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f44",
@@ -466,24 +511,6 @@ window.SCHEMA = [
           "手動",
           "半自動"
         ]
-      },
-      {
-        "id": "f45",
-        "label": "無電解銅メッキラインの種類",
-        "sub": "水平　　　○ライン",
-        "example": "2ライン　デスミア/PTH一貫ライン"
-      },
-      {
-        "id": "f46",
-        "label": "無電解銅メッキラインの種類",
-        "sub": "VCP　　　△ライン",
-        "example": "1ライン"
-      },
-      {
-        "id": "f47",
-        "label": "無電解銅メッキラインの種類",
-        "sub": "バッチ式　●ライン",
-        "example": "2ライン"
       },
       {
         "id": "f48",
@@ -499,27 +526,49 @@ window.SCHEMA = [
     "fields": [
       {
         "id": "f49",
-        "label": "薬液メーカー",
-        "example": "0.35mm",
-        "chemical": true
-      },
-      {
-        "id": "f50",
-        "label": "メッキラインの種類と厚み精度",
-        "sub": "VCP　　　○ライン（±□um）",
-        "example": "2ライン（±3um)"
-      },
-      {
-        "id": "f51",
-        "label": "メッキラインの種類と厚み精度",
-        "sub": "バッチ式　●ライン（±■um）",
-        "example": "2ライン（±3um)"
-      },
-      {
-        "id": "f52",
-        "label": "メッキラインの種類と厚み精度",
-        "sub": "フィルドメッキ　●ライン",
-        "example": "2ライン（±7um)"
+        "label": "電解銅メッキ ライン",
+        "sub": "ラインごとに行を追加",
+        "rowform": {
+          "add": "ラインを追加",
+          "cols": [
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              }
+            ],
+            [
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "VCP",
+                  "バッチ"
+                ]
+              },
+              {
+                "key": "acc",
+                "label": "厚み精度"
+              }
+            ],
+            [
+              {
+                "key": "minThk",
+                "label": "Min製品厚み"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f53",
@@ -545,24 +594,7 @@ window.SCHEMA = [
     ]
   },
   {
-    "section": "BGA",
-    "icon": "grid",
-    "fields": [
-      {
-        "id": "f55",
-        "label": "最小BGAピッチ",
-        "sub": "中心距離",
-        "example": "0.35mm"
-      },
-      {
-        "id": "f56",
-        "label": "最小BGAパッドサイズ",
-        "example": "0.2mm"
-      }
-    ]
-  },
-  {
-    "section": "製造限界微細配線",
+    "section": "微細配線・BGA",
     "icon": "git-branch",
     "fields": [
       {
@@ -588,6 +620,17 @@ window.SCHEMA = [
         "label": "HDI_セミアディティブ",
         "sub": "最小L/S　×　銅厚",
         "example": "実績なし"
+      },
+      {
+        "id": "f55",
+        "label": "最小BGAピッチ",
+        "sub": "中心距離",
+        "example": "0.35mm"
+      },
+      {
+        "id": "f56",
+        "label": "最小BGAパッドサイズ",
+        "example": "0.2mm"
       }
     ]
   },
@@ -599,13 +642,31 @@ window.SCHEMA = [
         "id": "f66",
         "label": "前処理の粗化処理方法",
         "example": "ソフトエッチング",
-        "opts": [
-          "ソフトエッチング",
-          "ブラシ",
-          "パーミス",
-          "ブラシ＋パーミス",
-          "化学処理"
-        ]
+        "rowform": {
+          "add": "ラインを追加",
+          "cols": [
+            [
+              {
+                "key": "method",
+                "label": "粗化方式",
+                "type": "select",
+                "opts": [
+                  "ソフトエッチング",
+                  "ブラシ",
+                  "パーミス",
+                  "ブラシ＋パーミス",
+                  "化学処理",
+                  "その他"
+                ]
+              },
+              {
+                "key": "qty",
+                "label": "台数",
+                "type": "num"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f67",
@@ -661,13 +722,31 @@ window.SCHEMA = [
         "id": "f72",
         "label": "前処理の粗化処理方法",
         "example": "ソフトエッチング",
-        "opts": [
-          "ソフトエッチング",
-          "ブラシ",
-          "パーミス",
-          "ブラシ＋パーミス",
-          "化学処理"
-        ]
+        "rowform": {
+          "add": "ラインを追加",
+          "cols": [
+            [
+              {
+                "key": "method",
+                "label": "粗化方式",
+                "type": "select",
+                "opts": [
+                  "ソフトエッチング",
+                  "ブラシ",
+                  "パーミス",
+                  "ブラシ＋パーミス",
+                  "化学処理",
+                  "その他"
+                ]
+              },
+              {
+                "key": "qty",
+                "label": "台数",
+                "type": "num"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f73",

@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.7.0";
+  const APP_VERSION = "1.8.0";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -165,16 +165,110 @@
       <input class="fi er-note" placeholder="備考 (顧客・用途など)" value="${esc(r.note || "")}">
     </div>`;
   }
-  // 設備は5列レイアウト、材料/薬液は「メーカー/品番」レイアウト
-  function rowHtml(kind, r) { return kind === "equip" ? equipRowHtml(r) : materialRowHtml(r); }
-  function fieldKind(f) { return f.equip ? "equip" : f.chemical ? "chemical" : f.material ? "material" : null; }
+  // デスミア行: ウェット/ドライで入力項目が変わる
+  function desmearRowHtml(r) {
+    r = r || {};
+    const t = r.type || "";
+    const inp = (dk, ph, val, extra = "") => `<input class="fi" data-dk="${dk}" placeholder="${esc(ph)}" value="${esc(val || "")}" ${extra}>`;
+    return `<div class="row-item desmear-item" data-kind="desmear">
+      <div class="dm-head">
+        <div class="optchips" style="margin:0;overflow:visible">
+          <span class="optchip dm-type ${t === "wet" ? "on" : ""}" data-t="wet">ウェット</span>
+          <span class="optchip dm-type ${t === "dry" ? "on" : ""}" data-t="dry">ドライ</span>
+        </div>
+        <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
+      </div>
+      <div class="dm-wet" style="${t === "wet" ? "" : "display:none"}">
+        <div class="dm-grid">
+          <label class="dm-l">構成<select class="fi" data-dk="config"><option value="">—</option>${["水平", "バッチ"].map(o => `<option ${r.config === o ? "selected" : ""}>${o}</option>`).join("")}</select></label>
+          <label class="dm-l">台数${inp("qty", "台", r.qty, 'type="number" inputmode="numeric" min="0"')}</label>
+        </div>
+        ${inp("freq", "ウェイトロス確認頻度 (例: 毎ロット)", r.freq)}
+        ${inp("spec", "規格 (例: 0.25-0.35mg/cm²)", r.spec)}
+      </div>
+      <div class="dm-dry" style="${t === "dry" ? "" : "display:none"}">
+        <div class="dm-grid">
+          ${inp("maker", "メーカー", r.maker)}
+          ${inp("model", "型番", r.model)}
+        </div>
+        <div class="dm-grid">
+          ${inp("gas", "ガス種類 (例: O2/CF4)", r.gas)}
+          ${inp("qty", "台数", r.qty, 'type="number" inputmode="numeric" min="0"')}
+        </div>
+        ${inp("freq", "ウェイトロス確認頻度 (例: 毎ロット)", r.freq)}
+        ${inp("spec", "規格 (例: 0.15-0.35mg)", r.spec)}
+      </div>
+    </div>`;
+  }
+  function readDesmearRow(item) {
+    const type = (item.querySelector(".dm-type.on") || {}).dataset ? item.querySelector(".dm-type.on").dataset.t : "";
+    const block = item.querySelector(type === "dry" ? ".dm-dry" : ".dm-wet");
+    const g = dk => { const el = block && block.querySelector(`[data-dk="${dk}"]`); return el ? el.value.trim() : ""; };
+    return { type, config: g("config"), maker: g("maker"), model: g("model"), gas: g("gas"), qty: g("qty"), freq: g("freq"), spec: g("spec") };
+  }
+  function fmtDesmear(r) {
+    const p = [];
+    if (r.type === "wet") { p.push("ウェット" + (r.config ? `(${r.config})` : "")); if (r.qty) p.push(r.qty + "台"); }
+    else if (r.type === "dry") { p.push("ドライ"); [r.maker, r.model].filter(Boolean).forEach(x => p.push(x)); if (r.gas) p.push("ガス:" + r.gas); if (r.qty) p.push(r.qty + "台"); }
+    else return "";
+    if (r.spec) p.push("規格:" + r.spec);
+    if (r.freq) p.push("確認:" + r.freq);
+    return p.join(" ");
+  }
+  // 汎用の構造化行 (schemaの rowform.cols 定義に従って入力欄を生成)
+  function rowformRowHtml(f, r) {
+    r = r || {};
+    const cell = fld => {
+      const v = r[fld.key] || "";
+      if (fld.type === "select")
+        return `<label class="dm-l">${esc(fld.label)}<select class="fi" data-dk="${fld.key}"><option value="">—</option>${fld.opts.map(o => `<option ${v === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></label>`;
+      const cls = fld.suggest ? "fi er-maker" : "fi";
+      const extra = fld.type === "num" ? 'type="number" inputmode="numeric" min="0"' : "";
+      return `<label class="dm-l">${esc(fld.label)}<input class="${cls}" data-dk="${fld.key}" value="${esc(v)}" ${extra} autocomplete="off"></label>`;
+    };
+    return `<div class="row-item rowform-item">
+      <div class="dm-head" style="justify-content:flex-end"><button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button></div>
+      ${f.rowform.cols.map(row => row.length > 1 ? `<div class="dm-grid">${row.map(cell).join("")}</div>` : cell(row[0])).join("")}
+    </div>`;
+  }
+  function readRowform(item, f) {
+    const o = {};
+    f.rowform.cols.flat().forEach(fld => { const el = item.querySelector(`[data-dk="${fld.key}"]`); if (el && el.value.trim()) o[fld.key] = el.value.trim(); });
+    return o;
+  }
+  function fmtRowform(f, r) {
+    return f.rowform.cols.flat().map(fld => r[fld.key] ? `${fld.label}:${r[fld.key]}` : null).filter(Boolean).join(" / ");
+  }
+  function fieldKind(f) { return f.equip ? "equip" : f.chemical ? "chemical" : f.material ? "material" : f.desmear ? "desmear" : null; }
+  function isRowField(f) { return !!(fieldKind(f) || f.rowform); }
+  function suggestCol(f) { return f.rowform ? f.rowform.cols.flat().find(c => c.suggest) : null; }
+  // 候補の対象になる「メーカー欄」を持つフィールドの種別 (設定ページ/サジェスト用)
+  function makerFieldKind(f) {
+    const k = fieldKind(f);
+    if (k === "equip" || k === "material" || k === "chemical") return k;
+    const sc = suggestCol(f); return sc ? (sc.kind || "material") : null;
+  }
+  // フィールド定義に応じた1行分のHTML
+  function rowItemHtml(f, r) {
+    if (f.rowform) return rowformRowHtml(f, r);
+    if (f.desmear) return desmearRowHtml(r);
+    return fieldKind(f) === "equip" ? equipRowHtml(r) : materialRowHtml(r);
+  }
   function readRows(box) {
+    const f = FIELD[box.dataset.fid] || {};
+    if (f.rowform)
+      return [...box.querySelectorAll(".row-item")].map(it => readRowform(it, f)).filter(o => Object.keys(o).length);
+    if (f.desmear)
+      return [...box.querySelectorAll(".desmear-item")].map(readDesmearRow).filter(r => r.type && (r.config || r.maker || r.model || r.gas || r.qty || r.freq || r.spec));
     return [...box.querySelectorAll(".row-item")].map(row => {
       const q = s => { const el = row.querySelector(s); return el ? el.value.trim() : ""; };
       return { maker: q(".er-maker"), model: q(".er-model"), mode: q(".er-mode"), qty: q(".er-qty"), note: q(".er-note") };
     }).filter(r => r.maker || r.model || r.mode || r.qty || r.note);
   }
-  function fmtRow(r) {
+  // 表示/比較/書出用のテキスト
+  function fmtRowByField(f, r) {
+    if (f && f.rowform) return fmtRowform(f, r);
+    if (r.type) return fmtDesmear(r);
     const p = [];
     if (r.maker) p.push(r.maker);
     if (r.model) p.push(r.model);
@@ -549,16 +643,18 @@
                 <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足" value="${esc(d.remark || "")}">
               </div>`;
             }
-            // 設備 / 材料 / 薬液メーカー: 行入力 (行追加可)
-            const kind = fieldKind(f);
-            if (kind) {
-              const rows = (d.rows && d.rows.length) ? d.rows : (d.value ? [{ note: d.value }] : [{}]);
-              const addLabel = kind === "equip" ? "装置を追加" : kind === "chemical" ? "薬液を追加" : "材料を追加";
+            // 設備 / 材料 / 薬液 / デスミア / 汎用構造化(rowform): 行入力 (行追加可)
+            if (isRowField(f)) {
+              const kind = fieldKind(f) || "rowform";
+              const simple = kind === "equip" || kind === "material" || kind === "chemical";
+              const rows = (d.rows && d.rows.length) ? d.rows : (d.value && simple ? [{ note: d.value }] : [{}]);
+              const addLabel = f.rowform ? (f.rowform.add || "行を追加")
+                : kind === "equip" ? "装置を追加" : kind === "chemical" ? "薬液を追加" : kind === "desmear" ? "設備を追加" : "材料を追加";
               return `<div class="efield">
                 <label class="fl">${esc(f.label)}</label>
                 ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
                 <div class="row-box" data-fid="${f.id}" data-kind="${kind}">
-                  ${rows.map(r => rowHtml(kind, r)).join("")}
+                  ${rows.map(r => rowItemHtml(f, r)).join("")}
                   <button type="button" class="btn ghost sm eq-add">${svg("plus", 13)} ${addLabel}</button>
                 </div>
               </div>`;
@@ -729,7 +825,8 @@
         if (!box) return;
         box.querySelectorAll(".row-item").forEach(r => r.remove());
         const add = box.querySelector(".eq-add");
-        (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", rowHtml(box.dataset.kind, r)));
+        const bf = FIELD[box.dataset.fid] || {};
+        (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", rowItemHtml(bf, r)));
       });
       Object.entries(vals.sp || {}).forEach(([fid, sv]) => {
         const box = modalRoot.querySelector(`.spec-box[data-fid="${fid}"]`);
@@ -762,8 +859,17 @@
       click: e => {
         const del = e.target.closest(".er-del");
         if (del) { del.closest(".row-item").remove(); scheduleDraft(); return; }
+        // デスミアのウェット/ドライ切替
+        const dmt = e.target.closest(".dm-type");
+        if (dmt) {
+          const item = dmt.closest(".desmear-item"), t = dmt.dataset.t;
+          item.querySelectorAll(".dm-type").forEach(x => x.classList.toggle("on", x === dmt));
+          item.querySelector(".dm-wet").style.display = t === "wet" ? "" : "none";
+          item.querySelector(".dm-dry").style.display = t === "dry" ? "" : "none";
+          scheduleDraft(); return;
+        }
         const add = e.target.closest(".eq-add");
-        if (add) { const box = add.closest(".row-box"); add.insertAdjacentHTML("beforebegin", rowHtml(box.dataset.kind, {})); scheduleDraft(); }
+        if (add) { const box = add.closest(".row-box"); add.insertAdjacentHTML("beforebegin", rowItemHtml(FIELD[box.dataset.fid] || {}, {})); scheduleDraft(); }
       },
       // 別のメーカー欄へ移った時に、前の欄のhideタイマーが新しい候補を消さないようclearする
       focusin: e => { if (isMaker(e)) { clearTimeout(sugTimer); showSug(e.target); } },
@@ -779,12 +885,12 @@
         const fid = el.dataset.fid, k = el.dataset.k, v = el.value.trim();
         if (v) { fields[fid] = fields[fid] || {}; fields[fid][k] = v; }
       });
-      // 装置/材料行: rows と、表示/比較/エクスポート用のテキスト(value)を両方保存
+      // 行入力(装置/材料/薬液/デスミア/構造化): rows と 表示用テキスト(value) を両方保存
       modalRoot.querySelectorAll(".row-box").forEach(box => {
-        const fid = box.dataset.fid;
+        const fid = box.dataset.fid, bf = FIELD[fid] || {};
         const rows = readRows(box);
         const remark = fields[fid] && fields[fid].remark;
-        if (rows.length) { fields[fid] = { rows, value: rows.map(fmtRow).join("\n") }; if (remark) fields[fid].remark = remark; }
+        if (rows.length) { fields[fid] = { rows, value: rows.map(r => fmtRowByField(bf, r)).join("\n") }; if (remark) fields[fid].remark = remark; }
         else delete fields[fid];
       });
       // スペック: spec(選択値) と value(整形テキスト) を保存
@@ -862,15 +968,15 @@
     const preset = getPreset();
     // 各フィールドの過去入力からの自動候補数
     const autoCount = fid => { const s = new Set(); makers.forEach(mk => ((mk.fields && mk.fields[fid] && mk.fields[fid].rows) || []).forEach(r => { if (r.maker) s.add(r.maker.trim()); })); return s.size; };
-    // メーカー入力欄を持つ工程だけを列挙
-    const groups = SCHEMA.map(sec => ({ sec, fs: sec.fields.filter(f => fieldKind(f)) })).filter(g => g.fs.length);
+    // メーカー入力欄を持つ工程だけを列挙 (デスミアは候補対象外)
+    const groups = SCHEMA.map(sec => ({ sec, fs: sec.fields.filter(f => makerFieldKind(f)) })).filter(g => g.fs.length);
 
     const groupHtml = groups.map((g, i) => `
       <details class="edit-section" ${i === 0 ? "open" : ""}>
         <summary><div class="acc-ico">${svg(g.sec.icon, 15)}</div>${esc(g.sec.section)} <span class="acc-count" style="margin-left:auto">${g.fs.length}欄</span></summary>
         <div class="es-body">
           ${g.fs.map(f => {
-            const k = fieldKind(f);
+            const k = makerFieldKind(f);
             return `<div class="efield">
               <label class="fl"><span class="kbadge ${k}">${KIND_LABEL[k]}</span> ${esc(f.label)}</label>
               <div class="fhint">過去入力から自動: ${autoCount(f.id)}社${f.sub ? " ・ " + esc(f.sub.split("\n")[0]) : ""}</div>
@@ -1040,7 +1146,7 @@
     if (!eq.length && !mat.length) return;
     const obj = {};
     SCHEMA.forEach(s => s.fields.forEach(f => {
-      const k = fieldKind(f);
+      const k = makerFieldKind(f);
       if (k === "equip" && eq.length) obj[f.id] = [...eq];
       else if ((k === "material" || k === "chemical") && mat.length) obj[f.id] = [...mat];
     }));
