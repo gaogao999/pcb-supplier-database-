@@ -683,14 +683,43 @@ window.SCHEMA = [
       },
       {
         "id": "f69",
-        "label": "液レジorドライフィルム",
-        "sub": "ドライフィルムの場合メーカー名",
+        "label": "レジスト",
+        "sub": "ドライフィルム/液体レジスト別に行を追加",
         "example": "Dupon、Eternal",
-        "opts": [
-          "液体レジスト",
-          "ドライフィルム"
-        ],
-        "multi": true
+        "rowform": {
+          "add": "行を追加",
+          "cols": [
+            [
+              {
+                "key": "type",
+                "label": "種類",
+                "type": "select",
+                "opts": [
+                  "ドライフィルム",
+                  "液体レジスト"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "material"
+              },
+              {
+                "key": "model",
+                "label": "型番"
+              }
+            ],
+            [
+              {
+                "key": "thk",
+                "label": "厚み"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f70",
@@ -763,14 +792,43 @@ window.SCHEMA = [
       },
       {
         "id": "f75",
-        "label": "液レジorドライフィルム",
-        "sub": "ドライフィルムの場合メーカー名",
+        "label": "レジスト",
+        "sub": "ドライフィルム/液体レジスト別に行を追加",
         "example": "Dupon、Eternal",
-        "opts": [
-          "液体レジスト",
-          "ドライフィルム"
-        ],
-        "multi": true
+        "rowform": {
+          "add": "行を追加",
+          "cols": [
+            [
+              {
+                "key": "type",
+                "label": "種類",
+                "type": "select",
+                "opts": [
+                  "ドライフィルム",
+                  "液体レジスト"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "material"
+              },
+              {
+                "key": "model",
+                "label": "型番"
+              }
+            ],
+            [
+              {
+                "key": "thk",
+                "label": "厚み"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f76",

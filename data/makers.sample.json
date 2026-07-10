@@ -312,7 +312,15 @@
         "value": "5台"
       },
       "f69": {
-        "value": "Dupon、Eternal"
+        "rows": [
+          {
+            "type": "ドライフィルム",
+            "maker": "Dupont",
+            "model": "—",
+            "thk": "25um"
+          }
+        ],
+        "value": "種類:ドライフィルム / メーカー:Dupont / 厚み:25um"
       },
       "f70": {
         "value": "有り"
@@ -336,7 +344,14 @@
         "value": "5台"
       },
       "f75": {
-        "value": "Dupon、Eternal"
+        "rows": [
+          {
+            "type": "ドライフィルム",
+            "maker": "Dupont",
+            "thk": "38um"
+          }
+        ],
+        "value": "種類:ドライフィルム / メーカー:Dupont / 厚み:38um"
       },
       "f76": {
         "value": "有り"
