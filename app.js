@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.9.1";
+  const APP_VERSION = "1.9.2";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -322,6 +322,32 @@
   let editorHooks = null;
   ["input", "change", "click", "focusin", "focusout"].forEach(type =>
     modalRoot.addEventListener(type, e => { if (editorHooks && editorHooks[type]) editorHooks[type](e); }));
+
+  // 行の削除は誤タップ防止のため「長押し(0.6秒)」。押している間は赤く満ちるアニメーション
+  let delTimer = null, delBtn = null, lastRowDelete = 0;
+  function cancelArm() {
+    if (delTimer) { clearTimeout(delTimer); delTimer = null; }
+    if (delBtn) { delBtn.classList.remove("arming"); delBtn = null; }
+  }
+  modalRoot.addEventListener("pointerdown", e => {
+    const btn = e.target.closest(".er-del");
+    if (!btn) return;
+    cancelArm();
+    delBtn = btn; btn.classList.add("arming");
+    delTimer = setTimeout(() => {
+      const item = btn.closest(".row-item");
+      cancelArm();
+      if (item) {
+        item.remove();
+        lastRowDelete = Date.now();
+        toast("行を削除しました");
+        // 下書きへ反映
+        const sb = modalRoot.querySelector(".sheet-body");
+        if (sb) sb.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }, 600);
+  });
+  ["pointerup", "pointercancel"].forEach(t => window.addEventListener(t, cancelArm, true));
 
   /* ---------- ルーティング (ハッシュ) ---------- */
   function router() {
@@ -867,7 +893,11 @@
       change: () => scheduleDraft(),
       click: e => {
         const del = e.target.closest(".er-del");
-        if (del) { del.closest(".row-item").remove(); scheduleDraft(); return; }
+        if (del) {
+          // 削除は長押しのみ。短くタップした時は操作方法を案内
+          if (Date.now() - lastRowDelete > 800) toast("×を長押しすると行を削除できます");
+          return;
+        }
         // デスミアのウェット/ドライ切替
         const dmt = e.target.closest(".dm-type");
         if (dmt) {
