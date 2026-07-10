@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.9.2";
+  const APP_VERSION = "1.9.3";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -156,7 +156,6 @@
           ${EQUIP_MODES.map(o => `<option ${r.mode === o ? "selected" : ""}>${o}</option>`).join("")}
         </select>
         <input class="fi er-qty" type="number" inputmode="numeric" min="0" placeholder="台" value="${esc(r.qty || "")}">
-        <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
       </div>
       <input class="fi er-note" placeholder="備考 (回転数・分解能など)" value="${esc(r.note || "")}">
     </div>`;
@@ -168,7 +167,6 @@
       <div class="row-line">
         <input class="fi er-maker" placeholder="メーカー" value="${esc(r.maker || "")}" autocomplete="off">
         <input class="fi er-model" placeholder="品番・グレード" value="${esc(r.model || "")}">
-        <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
       </div>
       <input class="fi er-note" placeholder="備考 (顧客・用途など)" value="${esc(r.note || "")}">
     </div>`;
@@ -184,7 +182,6 @@
           <span class="optchip dm-type ${t === "wet" ? "on" : ""}" data-t="wet">ウェット</span>
           <span class="optchip dm-type ${t === "dry" ? "on" : ""}" data-t="dry">ドライ</span>
         </div>
-        <button type="button" class="er-del" title="この行を削除">${svg("x", 13)}</button>
       </div>
       <div class="dm-wet" style="${t === "wet" ? "" : "display:none"}">
         <div class="dm-grid">
@@ -235,7 +232,6 @@
       return `<label class="dm-l">${esc(fld.label)}<input class="${cls}" data-dk="${fld.key}" value="${esc(v)}" ${extra} autocomplete="off"></label>`;
     };
     return `<div class="row-item rowform-item">
-      <button type="button" class="er-del rf-del" title="この行を削除">${svg("x", 13)}</button>
       ${f.rowform.cols.map(row => row.length > 1 ? `<div class="dm-grid">${row.map(cell).join("")}</div>` : cell(row[0])).join("")}
     </div>`;
   }
@@ -256,11 +252,24 @@
     if (k === "equip" || k === "material" || k === "chemical") return k;
     const sc = suggestCol(f); return sc ? (sc.kind || "material") : null;
   }
-  // フィールド定義に応じた1行分のHTML
-  function rowItemHtml(f, r) {
+  // フィールド定義に応じた1行分のHTML (スワイプで削除/複製できるようラップ)
+  function rowInnerHtml(f, r) {
     if (f.rowform) return rowformRowHtml(f, r);
     if (f.desmear) return desmearRowHtml(r);
     return fieldKind(f) === "equip" ? equipRowHtml(r) : materialRowHtml(r);
+  }
+  function rowItemHtml(f, r) {
+    return `<div class="row-wrap">
+      <div class="row-act left"><button type="button" class="row-dup-btn">${svg("plus2", 15)} 複製</button></div>
+      <div class="row-act right"><button type="button" class="row-del-btn">${svg("trash", 15)} 削除</button></div>
+      ${rowInnerHtml(f, r)}
+    </div>`;
+  }
+  function readOneRow(item, f) {
+    if (f.rowform) return readRowform(item, f);
+    if (f.desmear) return readDesmearRow(item);
+    const q = s => { const el = item.querySelector(s); return el ? el.value.trim() : ""; };
+    return { maker: q(".er-maker"), model: q(".er-model"), mode: q(".er-mode"), qty: q(".er-qty"), note: q(".er-note") };
   }
   function readRows(box) {
     const f = FIELD[box.dataset.fid] || {};
@@ -323,31 +332,53 @@
   ["input", "change", "click", "focusin", "focusout"].forEach(type =>
     modalRoot.addEventListener(type, e => { if (editorHooks && editorHooks[type]) editorHooks[type](e); }));
 
-  // 行の削除は誤タップ防止のため「長押し(0.6秒)」。押している間は赤く満ちるアニメーション
-  let delTimer = null, delBtn = null, lastRowDelete = 0;
-  function cancelArm() {
-    if (delTimer) { clearTimeout(delTimer); delTimer = null; }
-    if (delBtn) { delBtn.classList.remove("arming"); delBtn = null; }
+  // 行スワイプ: 左スワイプ=右に「削除」、右スワイプ=左に「複製」を表示 (iOSメール風)
+  // 工程切替スワイプと競合しないよう、行を横に動かしている間は rowSwiping=true にして親のスワイプを無効化
+  let rowSwiping = false;
+  const OPEN_W = 92;            // アクションボタンの表示幅
+  let sw = null;               // {wrap,item,x0,y0,base,horiz}
+  function closeOpenRows(except) {
+    modalRoot.querySelectorAll(".row-wrap.open").forEach(w => { if (w !== except) { w.classList.remove("open"); w.querySelector(".row-item").style.transform = ""; } });
   }
-  modalRoot.addEventListener("pointerdown", e => {
-    const btn = e.target.closest(".er-del");
-    if (!btn) return;
-    cancelArm();
-    delBtn = btn; btn.classList.add("arming");
-    delTimer = setTimeout(() => {
-      const item = btn.closest(".row-item");
-      cancelArm();
-      if (item) {
-        item.remove();
-        lastRowDelete = Date.now();
-        toast("行を削除しました");
-        // 下書きへ反映
-        const sb = modalRoot.querySelector(".sheet-body");
-        if (sb) sb.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-    }, 600);
-  });
-  ["pointerup", "pointercancel"].forEach(t => window.addEventListener(t, cancelArm, true));
+  function rowTouchStart(e) {
+    const wrap = e.target.closest(".row-wrap");
+    // 行内ならどこから始めてもOK (横移動を検知した時だけスワイプ扱い=タップ入力は邪魔しない)。
+    // アクションボタン自体の上では開始しない
+    if (!wrap || e.target.closest(".row-act")) { sw = null; return; }
+    const t = e.touches[0];
+    const open = wrap.classList.contains("open");
+    sw = { wrap, item: wrap.querySelector(".row-item"), x0: t.clientX, y0: t.clientY, base: wrap.dataset.side === "left" ? OPEN_W : wrap.dataset.side === "right" ? -OPEN_W : 0, horiz: false, openBefore: open };
+    sw.item.style.transition = "none";
+  }
+  function rowTouchMove(e) {
+    if (!sw) return;
+    const t = e.touches[0], dx = t.clientX - sw.x0, dy = t.clientY - sw.y0;
+    if (!sw.horiz) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dx) <= Math.abs(dy)) { sw = null; return; }  // 縦スクロール優先
+      sw.horiz = true; rowSwiping = true; closeOpenRows(sw.wrap);
+    }
+    e.preventDefault();
+    let x = sw.base + dx;
+    x = Math.max(-OPEN_W - 20, Math.min(OPEN_W + 20, x));  // 少しだけオーバードラッグ許容
+    sw.item.style.transform = `translateX(${x}px)`;
+  }
+  function rowTouchEnd() {
+    if (!sw) return;
+    const cur = sw; sw = null;
+    if (!cur.horiz) return;
+    setTimeout(() => { rowSwiping = false; }, 30);
+    cur.item.style.transition = "";
+    const m = new DOMMatrix(getComputedStyle(cur.item).transform);
+    const x = m.m41;
+    if (x <= -OPEN_W / 2) { cur.wrap.classList.add("open"); cur.wrap.dataset.side = "right"; cur.item.style.transform = `translateX(-${OPEN_W}px)`; }
+    else if (x >= OPEN_W / 2) { cur.wrap.classList.add("open"); cur.wrap.dataset.side = "left"; cur.item.style.transform = `translateX(${OPEN_W}px)`; }
+    else { cur.wrap.classList.remove("open"); cur.wrap.dataset.side = ""; cur.item.style.transform = ""; }
+  }
+  modalRoot.addEventListener("touchstart", rowTouchStart, { passive: true });
+  modalRoot.addEventListener("touchmove", rowTouchMove, { passive: false });
+  modalRoot.addEventListener("touchend", rowTouchEnd, { passive: true });
+  modalRoot.addEventListener("touchcancel", () => { if (sw) { sw.item.style.transform = ""; sw = null; } }, { passive: true });
 
   /* ---------- ルーティング (ハッシュ) ---------- */
   function router() {
@@ -782,6 +813,7 @@
       let stx = 0, sty = 0;
       sb.addEventListener("touchstart", e => { stx = e.touches[0].clientX; sty = e.touches[0].clientY; }, { passive: true });
       sb.addEventListener("touchend", e => {
+        if (rowSwiping) return;   // 行スワイプ中は工程切替しない
         const dx = e.changedTouches[0].clientX - stx, dy = e.changedTouches[0].clientY - sty;
         if (Math.abs(dx) > 70 && Math.abs(dx) > 1.6 * Math.abs(dy)) {
           if (dx < 0 && onlySec < SCHEMA.length - 1) doSave(1);
@@ -858,7 +890,7 @@
       Object.entries(vals.eq || {}).forEach(([fid, rows]) => {
         const box = modalRoot.querySelector(`.row-box[data-fid="${fid}"]`);
         if (!box) return;
-        box.querySelectorAll(".row-item").forEach(r => r.remove());
+        box.querySelectorAll(".row-wrap").forEach(r => r.remove());
         const add = box.querySelector(".eq-add");
         const bf = FIELD[box.dataset.fid] || {};
         (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", rowItemHtml(bf, r)));
@@ -892,11 +924,17 @@
       },
       change: () => scheduleDraft(),
       click: e => {
-        const del = e.target.closest(".er-del");
-        if (del) {
-          // 削除は長押しのみ。短くタップした時は操作方法を案内
-          if (Date.now() - lastRowDelete > 800) toast("×を長押しすると行を削除できます");
-          return;
+        // 行スワイプで表示した「削除」
+        const delBtn = e.target.closest(".row-del-btn");
+        if (delBtn) { delBtn.closest(".row-wrap").remove(); toast("行を削除しました"); scheduleDraft(); return; }
+        // 行スワイプで表示した「複製」
+        const dupBtn = e.target.closest(".row-dup-btn");
+        if (dupBtn) {
+          const wrap = dupBtn.closest(".row-wrap"), box = wrap.closest(".row-box");
+          const f = FIELD[box.dataset.fid] || {};
+          wrap.insertAdjacentHTML("afterend", rowItemHtml(f, readOneRow(wrap.querySelector(".row-item"), f)));
+          wrap.classList.remove("open"); wrap.dataset.side = ""; wrap.querySelector(".row-item").style.transform = "";
+          toast("行を複製しました"); scheduleDraft(); return;
         }
         // デスミアのウェット/ドライ切替
         const dmt = e.target.closest(".dm-type");

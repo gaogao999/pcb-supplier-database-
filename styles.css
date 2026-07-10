@@ -232,20 +232,19 @@ textarea.fi{resize:vertical;min-height:44px}
 .row-line .er-mode{padding:9px 4px;font-size:13px}
 .row-line .er-qty{padding:9px 4px;text-align:center}
 .row-item .er-note{background:var(--card);font-size:13px;padding:8px 10px}
-.er-del{
-  width:24px;height:24px;border-radius:50%;flex:none;
-  background:var(--bg2);border:1px solid var(--line2);color:var(--danger);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
-  touch-action:none;-webkit-touch-callout:none;user-select:none;
-}
-.er-del:hover{border-color:var(--danger)}
-/* 長押し中: 0.6秒かけて赤く満ちる */
-.er-del.arming{animation:arm .6s linear forwards}
-@keyframes arm{
-  from{box-shadow:inset 0 0 0 0 var(--danger)}
-  to{box-shadow:inset 0 0 0 13px var(--danger);color:#fff;transform:scale(1.15)}
-}
 .eq-add{align-self:flex-start}
+/* 行スワイプ: 左スワイプ=削除(右)、右スワイプ=複製(左) */
+.row-wrap{position:relative;overflow:hidden;border-radius:11px}
+.row-wrap > .row-item{position:relative;z-index:1;transition:transform .2s ease;will-change:transform;touch-action:pan-y}
+.row-act{position:absolute;top:0;bottom:0;display:flex;align-items:center;z-index:0}
+.row-act.right{right:0;justify-content:flex-end}
+.row-act.left{left:0;justify-content:flex-start}
+.row-act button{
+  height:100%;width:92px;border:none;color:#fff;font-weight:800;font-size:13px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+}
+.row-del-btn{background:var(--danger)}
+.row-dup-btn{background:var(--accent)}
 /* デスミア行 (ウェット/ドライ) */
 .desmear-item{gap:9px}
 .dm-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -256,8 +255,7 @@ textarea.fi{resize:vertical;min-height:44px}
 .desmear-item .fi{background:var(--card);font-size:14px}
 .dm-type{padding:8px 16px}
 /* 汎用 構造化行 (×は枠の右上角に浮かせて余白を作らない) */
-.rowform-item{gap:8px;position:relative}
-.rf-del{position:absolute;top:-9px;right:-7px;width:26px;height:26px;background:var(--bg2);z-index:2}
+.rowform-item{gap:8px}
 .rowform-item .fi{background:var(--card);font-size:14px}
 .multi-tag{font-size:10px;font-weight:800;color:var(--accent);background:#4f8cff1c;border:1px solid #4f8cff44;padding:1px 7px;border-radius:999px;vertical-align:middle;margin-left:4px}
 
