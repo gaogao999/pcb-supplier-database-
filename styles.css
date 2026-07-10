@@ -248,9 +248,9 @@ textarea.fi{resize:vertical;min-height:44px}
 .dm-l .fi{background:var(--card)}
 .desmear-item .fi{background:var(--card);font-size:14px}
 .dm-type{padding:8px 16px}
-/* 汎用 構造化行 */
-.rowform-item{gap:8px}
-.rowform-item .dm-head{margin-bottom:-4px}
+/* 汎用 構造化行 (×は枠の右上角に浮かせて余白を作らない) */
+.rowform-item{gap:8px;position:relative}
+.rf-del{position:absolute;top:-9px;right:-7px;width:26px;height:26px;background:var(--bg2);z-index:2}
 .rowform-item .fi{background:var(--card);font-size:14px}
 .multi-tag{font-size:10px;font-weight:800;color:var(--accent);background:#4f8cff1c;border:1px solid #4f8cff44;padding:1px 7px;border-radius:999px;vertical-align:middle;margin-left:4px}
 
