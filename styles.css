@@ -286,6 +286,7 @@ textarea.fi{resize:vertical;min-height:44px}
 .spec-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .spec-cell{display:inline-flex;align-items:center;gap:4px}
 .spec-cell select.fi{width:auto;min-width:78px;padding:11px 8px}
+.spec-cell input.spec-num{width:92px;padding:11px 9px;text-align:center}
 .spec-unit{font-size:13px;color:var(--muted);font-weight:700}
 .spec-sep{color:var(--faint);font-weight:800}
 .spec-part{display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px dashed var(--line2);border-radius:10px;padding:6px 8px}

@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.8.2";
+  const APP_VERSION = "1.9.0";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -97,27 +97,35 @@
   /* ---------- スペック入力 (厚み等を数値ドロップダウンで選択) ---------- */
   const stripUnit = (s, u) => String(s == null ? "" : s).replace(new RegExp(u + "\\s*$"), "").replace(u, "").trim();
   function parseSpec(d, sp) {
-    // 保存済み spec を優先。無ければ既存テキスト(value)から最小限パースして初期値に
+    // 保存済み spec を優先。無ければ既存テキスト(value)から数値を抽出して初期値に
     if (d.spec) return d.spec;
     const v = {};
     if (!d.value) return v;
+    const nums = String(d.value).match(/[\d.]+/g) || [];
     if (sp.kind === "range") { const t = String(d.value).split(/[～~]/); v.min = stripUnit(t[0] || "", sp.unit); v.max = stripUnit(t[1] || "", sp.unit); }
-    else if (sp.kind === "single") { v.v = stripUnit(d.value, sp.unit); }
+    else if (sp.kind === "single") { v.v = sp.opts ? String(d.value).trim() : (nums[0] || ""); }
+    else if (sp.kind === "parts") { sp.parts.forEach((pt, i) => { if (!pt.opts && nums[i] != null) v[pt.key] = nums[i]; }); }
     return v;
   }
-  function specSelect(key, opts, unit, cur, ph) {
-    const extra = cur && !opts.includes(cur) ? `<option selected>${esc(cur)}</option>` : "";
-    return `<span class="spec-cell"><select class="fi spec-sel" data-key="${key}">
-      <option value="">${esc(ph || "—")}</option>${extra}
-      ${opts.map(o => `<option ${cur === o ? "selected" : ""}>${esc(o)}</option>`).join("")}
-    </select>${unit ? `<span class="spec-unit">${esc(unit)}</span>` : ""}</span>`;
+  // 1マス分: opts あり=選択、なし=単位付き数値入力
+  function specCell(key, fld, cur, ph) {
+    const unit = fld.unit ? `<span class="spec-unit">${esc(fld.unit)}</span>` : "";
+    const prefix = fld.prefix ? `<span class="spec-unit">${esc(fld.prefix)}</span>` : "";
+    if (fld.opts) {
+      const extra = cur && !fld.opts.includes(cur) ? `<option selected>${esc(cur)}</option>` : "";
+      return `<span class="spec-cell">${prefix}<select class="fi spec-sel" data-key="${key}">
+        <option value="">${esc(ph || "—")}</option>${extra}
+        ${fld.opts.map(o => `<option ${cur === o ? "selected" : ""}>${esc(o)}</option>`).join("")}
+      </select>${unit}</span>`;
+    }
+    return `<span class="spec-cell">${prefix}<input class="fi spec-sel spec-num" data-key="${key}" type="number" inputmode="decimal" step="any" value="${esc(cur || "")}" placeholder="${esc(ph || "—")}">${unit}</span>`;
   }
   function specInner(sp, vals) {
     if (sp.kind === "range")
-      return specSelect("min", sp.opts, "", vals.min, "最小") + `<span class="spec-sep">～</span>` + specSelect("max", sp.opts, sp.unit, vals.max, "最大");
+      return specCell("min", { opts: sp.opts }, vals.min, "最小") + `<span class="spec-sep">～</span>` + specCell("max", { opts: sp.opts, unit: sp.unit }, vals.max, "最大");
     if (sp.kind === "single")
-      return specSelect("v", sp.opts, sp.unit, vals.v, "選択");
-    return sp.parts.map(pt => `<span class="spec-part"><span class="spec-plabel">${esc(pt.label)}</span>${specSelect(pt.key, pt.opts, pt.unit, vals[pt.key], "—")}</span>`).join("");
+      return specCell("v", { opts: sp.opts, unit: sp.unit, prefix: sp.prefix }, vals.v, sp.opts ? "選択" : "数値");
+    return sp.parts.map(pt => `<span class="spec-part"><span class="spec-plabel">${esc(pt.label)}</span>${specCell(pt.key, pt, vals[pt.key], "—")}</span>`).join("");
   }
   function readSpec(box) {
     const vals = {};
@@ -125,10 +133,10 @@
     return vals;
   }
   function fmtSpec(fid, vals) {
-    const sp = FIELD[fid].spec;
+    const sp = FIELD[fid].spec, pre = sp.prefix || "";
     if (sp.kind === "range") { if (vals.min && vals.max) return `${vals.min}～${vals.max}${sp.unit}`; const o = vals.min || vals.max; return o ? `${o}${sp.unit}` : ""; }
-    if (sp.kind === "single") return vals.v ? `${vals.v}${sp.unit}` : "";
-    return sp.parts.map(pt => vals[pt.key] ? `${pt.label}${vals[pt.key]}${pt.unit}` : null).filter(Boolean).join(" / ");
+    if (sp.kind === "single") return vals.v ? `${pre}${vals.v}${sp.unit || ""}` : "";
+    return sp.parts.map(pt => vals[pt.key] ? `${pt.label}${(pt.prefix || "")}${vals[pt.key]}${pt.unit || ""}` : null).filter(Boolean).join(" / ");
   }
 
   /* ---------- 装置メーカー行入力 (メーカー/型番/運転方式/台数/備考) ---------- */
@@ -639,6 +647,7 @@
               return `<div class="efield">
                 <label class="fl">${esc(f.label)}</label>
                 ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
+                ${!d.spec && d.value ? `<div class="fhint">現在の記録: ${esc(d.value)}</div>` : ""}
                 <div class="spec-box" data-fid="${f.id}"><div class="spec-row">${specInner(f.spec, vals)}</div></div>
                 <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足" value="${esc(d.remark || "")}">
               </div>`;
