@@ -8,25 +8,71 @@ window.SCHEMA = [
         "id": "f1",
         "label": "従業員",
         "sub": "○○人",
-        "example": "1000人"
+        "example": "1000人",
+        "spec": {
+          "kind": "single",
+          "unit": "人"
+        }
       },
       {
         "id": "f2",
         "label": "生産キャパシティ",
         "sub": "○○m2/月",
-        "example": "20万m2/月"
+        "example": "20万m2/月",
+        "spec": {
+          "kind": "single",
+          "unit": "m²/月"
+        }
       },
       {
         "id": "f3",
         "label": "製品のアプリケーション",
-        "sub": "○○40%：■■30%：▲▲20％：他10％",
-        "example": "車載40%：通信30%：民生20％：他10％"
+        "sub": "分野ごとに行を追加 (比率%)",
+        "example": "車載40%：通信30%：民生20％：他10％",
+        "rowform": {
+          "add": "分野を追加",
+          "cols": [
+            [
+              {
+                "key": "seg",
+                "label": "分野",
+                "type": "select",
+                "opts": [
+                  "車載",
+                  "通信",
+                  "民生",
+                  "産業",
+                  "医療",
+                  "サーバー/DC",
+                  "航空宇宙",
+                  "その他"
+                ]
+              },
+              {
+                "key": "pct",
+                "label": "比率%",
+                "type": "num"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f4",
         "label": "主要顧客",
-        "sub": "多い順に5社",
-        "example": "SONY、Canon、A社、B社、D社"
+        "sub": "多い順に行を追加",
+        "example": "SONY、Canon、A社、B社、D社",
+        "rowform": {
+          "add": "顧客を追加",
+          "cols": [
+            [
+              {
+                "key": "name",
+                "label": "顧客名"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f5",
@@ -65,7 +111,16 @@ window.SCHEMA = [
         "label": "品質認証",
         "sub": "ISO9001/ISO14001 /IATF16949",
         "note": "取得している品質認証全て",
-        "example": "ISO9001/ISO14001 /IATF16949"
+        "example": "ISO9001/ISO14001 /IATF16949",
+        "opts": [
+          "ISO9001",
+          "ISO14001",
+          "IATF16949",
+          "ISO13485",
+          "AS9100",
+          "UL"
+        ],
+        "multi": true
       },
       {
         "id": "f10",
@@ -81,12 +136,48 @@ window.SCHEMA = [
       {
         "id": "f11",
         "label": "最大貫通_層構成",
-        "example": "12"
+        "example": "12",
+        "spec": {
+          "kind": "single",
+          "unit": "層",
+          "opts": [
+            "2",
+            "4",
+            "6",
+            "8",
+            "10",
+            "12",
+            "14",
+            "16",
+            "18",
+            "20",
+            "24",
+            "28",
+            "32",
+            "36",
+            "40"
+          ]
+        }
       },
       {
         "id": "f12",
         "label": "最大HDI_層構成",
-        "example": "3+8+3　／ 10層Any layer"
+        "example": "3+8+3　／ 10層Any layer",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "bu",
+              "label": "ビルドアップ(片側)",
+              "unit": "層"
+            },
+            {
+              "key": "core",
+              "label": "コア",
+              "unit": "層"
+            }
+          ]
+        }
       },
       {
         "id": "f13",
@@ -117,13 +208,43 @@ window.SCHEMA = [
         "id": "f15",
         "label": "最大WPNLサイズ",
         "sub": "X ｘ Y mm",
-        "example": "500 ｘ 600 mm"
+        "example": "500 ｘ 600 mm",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "x",
+              "label": "X",
+              "unit": "mm"
+            },
+            {
+              "key": "y",
+              "label": "Y",
+              "unit": "mm"
+            }
+          ]
+        }
       },
       {
         "id": "f16",
         "label": "最大製品サイズ",
         "sub": "X ｘ Y mm",
-        "example": "120 ｘ 120 mm"
+        "example": "120 ｘ 120 mm",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "x",
+              "label": "X",
+              "unit": "mm"
+            },
+            {
+              "key": "y",
+              "label": "Y",
+              "unit": "mm"
+            }
+          ]
+        }
       },
       {
         "id": "f17",
@@ -334,30 +455,64 @@ window.SCHEMA = [
         "id": "f26",
         "label": "最小THドリル径",
         "sub": "ドリルビット径",
-        "example": "φ0.15mm"
+        "example": "φ0.15mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm",
+          "prefix": "φ"
+        }
       },
       {
         "id": "f27",
         "label": "最小THランド径",
         "sub": "@最小ドリル径",
-        "example": "φ0.4mm @ 0.15mm"
+        "example": "φ0.4mm @ 0.15mm",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "land",
+              "label": "ランド径",
+              "unit": "mm",
+              "prefix": "φ"
+            },
+            {
+              "key": "at",
+              "label": "@ドリル径",
+              "unit": "mm"
+            }
+          ]
+        }
       },
       {
         "id": "f28",
         "label": "最小TH間隔",
         "sub": "穴壁間",
-        "example": "0.35mm"
+        "example": "0.35mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       },
       {
         "id": "f29",
         "label": "TH穴ズレ",
         "sub": "@＞Cpk1.33",
-        "example": "±0.05mm"
+        "example": "±0.05mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm",
+          "prefix": "±"
+        }
       },
       {
         "id": "f30",
         "label": "最大アスペクト比",
-        "example": "8:1"
+        "example": "8:1",
+        "spec": {
+          "kind": "single",
+          "unit": ":1"
+        }
       }
     ]
   },
@@ -375,7 +530,11 @@ window.SCHEMA = [
       {
         "id": "f32",
         "label": "最小レーザーVia径",
-        "example": "75um"
+        "example": "75um",
+        "spec": {
+          "kind": "single",
+          "unit": "um"
+        }
       },
       {
         "id": "f33",
@@ -392,7 +551,11 @@ window.SCHEMA = [
         "id": "f35",
         "label": "最小レーザーVia間隔",
         "sub": "Via壁間",
-        "example": "0.2mm"
+        "example": "0.2mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       },
       {
         "id": "f36",
@@ -408,17 +571,30 @@ window.SCHEMA = [
         "id": "f37",
         "label": "レーザーVia BOTTOM径/TOP径",
         "sub": "●●%以上",
-        "example": "80％以上"
+        "example": "80％以上",
+        "spec": {
+          "kind": "single",
+          "unit": "%以上"
+        }
       },
       {
         "id": "f38",
         "label": "レーザーVia位置精度",
-        "example": "±25um"
+        "example": "±25um",
+        "spec": {
+          "kind": "single",
+          "unit": "um",
+          "prefix": "±"
+        }
       },
       {
         "id": "f39",
         "label": "最大アスペクト比",
-        "example": "0.75:1"
+        "example": "0.75:1",
+        "spec": {
+          "kind": "single",
+          "unit": ":1"
+        }
       }
     ]
   },
@@ -601,36 +777,124 @@ window.SCHEMA = [
         "id": "f59",
         "label": "貫通_サブトラ",
         "sub": "最小L/S　×　銅厚（銅メッキ込）",
-        "example": "60/60 × 40um"
+        "example": "60/60 × 40um",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "l",
+              "label": "L",
+              "unit": "um"
+            },
+            {
+              "key": "s",
+              "label": "S",
+              "unit": "um"
+            },
+            {
+              "key": "t",
+              "label": "銅厚",
+              "unit": "um"
+            }
+          ]
+        }
       },
       {
         "id": "f60",
         "label": "貫通_セミアディティブ",
         "sub": "最小L/S　×　銅厚",
-        "example": "45/45 × 12um(M-SAP）"
+        "example": "45/45 × 12um(M-SAP）",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "l",
+              "label": "L",
+              "unit": "um"
+            },
+            {
+              "key": "s",
+              "label": "S",
+              "unit": "um"
+            },
+            {
+              "key": "t",
+              "label": "銅厚",
+              "unit": "um"
+            }
+          ]
+        }
       },
       {
         "id": "f61",
         "label": "HDI_サブトラ",
         "sub": "最小L/S　×　銅厚（銅メッキ込）",
-        "example": "50/50 x  23um"
+        "example": "50/50 x  23um",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "l",
+              "label": "L",
+              "unit": "um"
+            },
+            {
+              "key": "s",
+              "label": "S",
+              "unit": "um"
+            },
+            {
+              "key": "t",
+              "label": "銅厚",
+              "unit": "um"
+            }
+          ]
+        }
       },
       {
         "id": "f62",
         "label": "HDI_セミアディティブ",
         "sub": "最小L/S　×　銅厚",
-        "example": "実績なし"
+        "example": "実績なし",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "l",
+              "label": "L",
+              "unit": "um"
+            },
+            {
+              "key": "s",
+              "label": "S",
+              "unit": "um"
+            },
+            {
+              "key": "t",
+              "label": "銅厚",
+              "unit": "um"
+            }
+          ]
+        }
       },
       {
         "id": "f55",
         "label": "最小BGAピッチ",
         "sub": "中心距離",
-        "example": "0.35mm"
+        "example": "0.35mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       },
       {
         "id": "f56",
         "label": "最小BGAパッドサイズ",
-        "example": "0.2mm"
+        "example": "0.2mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       }
     ]
   },
@@ -679,7 +943,11 @@ window.SCHEMA = [
         "id": "f68",
         "label": "セミオート露光機保有台数",
         "sub": "●台",
-        "example": "5台"
+        "example": "5台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
+        }
       },
       {
         "id": "f69",
@@ -809,7 +1077,11 @@ window.SCHEMA = [
         "id": "f74",
         "label": "セミオート露光機保有台数",
         "sub": "●台",
-        "example": "5台"
+        "example": "5台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
+        }
       },
       {
         "id": "f75",
@@ -945,7 +1217,11 @@ window.SCHEMA = [
         "id": "f82",
         "label": "セミオート露光機保有台数",
         "sub": "●台",
-        "example": "5台"
+        "example": "5台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
+        }
       },
       {
         "id": "f83",
@@ -957,27 +1233,49 @@ window.SCHEMA = [
       {
         "id": "f85",
         "label": "SRズレ公差",
-        "example": "±0.05mm"
+        "example": "±0.05mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm",
+          "prefix": "±"
+        }
       },
       {
         "id": "f86",
         "label": "SR開口公差",
-        "example": "±0.025mm"
+        "example": "±0.025mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm",
+          "prefix": "±"
+        }
       },
       {
         "id": "f87",
         "label": "最小SR開口サイズ",
-        "example": "0.050mm"
+        "example": "0.050mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       },
       {
         "id": "f88",
         "label": "最小SRダム幅",
-        "example": "0.1mm"
+        "example": "0.1mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       },
       {
         "id": "f89",
         "label": "最小抜き文字幅",
-        "example": "0.15mm"
+        "example": "0.15mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       },
       {
         "id": "f90",
@@ -1024,7 +1322,12 @@ window.SCHEMA = [
       {
         "id": "f95",
         "label": "位置精度",
-        "example": "±0.05mm"
+        "example": "±0.05mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm",
+          "prefix": "±"
+        }
       },
       {
         "id": "f96",
@@ -1036,7 +1339,11 @@ window.SCHEMA = [
       {
         "id": "f98",
         "label": "最小文字幅",
-        "example": "0.1mm"
+        "example": "0.1mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm"
+        }
       }
     ]
   },
@@ -1047,7 +1354,12 @@ window.SCHEMA = [
       {
         "id": "f99",
         "label": "ルーター加工精度",
-        "example": "±0.1mm"
+        "example": "±0.1mm",
+        "spec": {
+          "kind": "single",
+          "unit": "mm",
+          "prefix": "±"
+        }
       },
       {
         "id": "f100",
@@ -1094,7 +1406,16 @@ window.SCHEMA = [
       {
         "id": "f104",
         "label": "OSPでの実装品質保証期間",
-        "example": "6か月"
+        "example": "6か月",
+        "spec": {
+          "kind": "single",
+          "opts": [
+            "3か月",
+            "6か月",
+            "1年",
+            "2年"
+          ]
+        }
       },
       {
         "id": "f105",
@@ -1109,7 +1430,16 @@ window.SCHEMA = [
       {
         "id": "f106",
         "label": "無電解Ni/Auメッキでの実装品質保証期間",
-        "example": "1年"
+        "example": "1年",
+        "spec": {
+          "kind": "single",
+          "opts": [
+            "3か月",
+            "6か月",
+            "1年",
+            "2年"
+          ]
+        }
       },
       {
         "id": "f107",
@@ -1284,19 +1614,31 @@ window.SCHEMA = [
         "id": "f121",
         "label": "内層回路検査",
         "sub": "AOIの分解能（最小検出幅）",
-        "example": "20um"
+        "example": "20um",
+        "spec": {
+          "kind": "single",
+          "unit": "um"
+        }
       },
       {
         "id": "f122",
         "label": "内層回路検査",
         "sub": "Verify画面のロックタイマー時間",
-        "example": "0.5秒"
+        "example": "0.5秒",
+        "spec": {
+          "kind": "single",
+          "unit": "秒"
+        }
       },
       {
         "id": "f123",
         "label": "内層回路検査",
         "sub": "Verify画面の倍率",
-        "example": "50倍"
+        "example": "50倍",
+        "spec": {
+          "kind": "single",
+          "unit": "倍"
+        }
       },
       {
         "id": "f124",
@@ -1347,19 +1689,31 @@ window.SCHEMA = [
         "id": "f128",
         "label": "外層回路検査",
         "sub": "AOIの分解能（最小検出幅）",
-        "example": "20um"
+        "example": "20um",
+        "spec": {
+          "kind": "single",
+          "unit": "um"
+        }
       },
       {
         "id": "f129",
         "label": "外層回路検査",
         "sub": "Verify画面のロックタイマー時間",
-        "example": "0.5秒"
+        "example": "0.5秒",
+        "spec": {
+          "kind": "single",
+          "unit": "秒"
+        }
       },
       {
         "id": "f130",
         "label": "外層回路検査",
         "sub": "Verify画面の倍率",
-        "example": "50倍"
+        "example": "50倍",
+        "spec": {
+          "kind": "single",
+          "unit": "倍"
+        }
       },
       {
         "id": "f131",
@@ -1458,31 +1812,52 @@ window.SCHEMA = [
         "label": "インピーダンスコントロール",
         "sub": "管理公差",
         "note": "管理公差を明記してください",
-        "example": "±10％"
+        "example": "±10％",
+        "spec": {
+          "kind": "single",
+          "unit": "%",
+          "prefix": "±"
+        }
       },
       {
         "id": "f143",
         "label": "電気チェック",
         "sub": "2端子治具対応装置台数",
-        "example": "10台"
+        "example": "10台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
+        }
       },
       {
         "id": "f144",
         "label": "電気チェック",
         "sub": "2端子フライングチェッカー台数",
-        "example": "5台"
+        "example": "5台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
+        }
       },
       {
         "id": "f145",
         "label": "電気チェック",
         "sub": "4端子治具対応装置台数",
-        "example": "3台"
+        "example": "3台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
+        }
       },
       {
         "id": "f146",
         "label": "電気チェック",
         "sub": "4端子フライングチェッカー台数",
-        "example": "1台"
+        "example": "1台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
+        }
       },
       {
         "id": "f147",
