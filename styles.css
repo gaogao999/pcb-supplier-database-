@@ -199,6 +199,15 @@ textarea.fi{resize:vertical;min-height:44px}
 .efield{padding:14px 0;border-top:1px dashed var(--line)}
 .efield:first-child{border-top:none}
 .efield .fl{color:var(--text);white-space:pre-line;margin-bottom:2px}
+/* ラベル＋入力を1行に (単一/範囲スペック) */
+.efield-inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.efield-inline > .fl{margin:0;flex:0 0 auto}
+.efield-inline .spec-box{margin:0;flex:1 1 auto;display:flex;justify-content:flex-end}
+.field-sub-inline{font-size:11px;color:var(--faint);font-weight:500}
+/* 工程末尾の備考 */
+.sec-note-field{margin-top:6px;padding-top:12px;border-top:1px dashed var(--line)}
+.sec-note-field .fl{color:var(--muted)}
+.sec-note-field textarea{background:var(--card2)}
 .efield .fhint{font-size:11.5px;color:var(--faint);font-weight:500;white-space:pre-line;margin-bottom:7px}
 .efield .pair{display:grid;grid-template-columns:1fr;gap:7px}
 .efield .pair input[data-k="remark"]{background:var(--card2);font-size:14px;padding:9px 12px}

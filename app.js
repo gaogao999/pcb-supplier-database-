@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "1.9.3";
+  const APP_VERSION = "2.0.0";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -87,7 +87,7 @@
 
   function filledCount(m) {
     if (!m.fields) return 0;
-    return Object.values(m.fields).filter(f => f && f.value && String(f.value).trim()).length;
+    return Object.entries(m.fields).filter(([k, f]) => !k.startsWith("__note_") && f && f.value && String(f.value).trim()).length;
   }
   const TOTAL_FIELDS = SCHEMA.reduce((n, s) => n + s.fields.length, 0);
   const FIELD = {}; SCHEMA.forEach(s => s.fields.forEach(f => { FIELD[f.id] = f; }));
@@ -223,13 +223,14 @@
   // 汎用の構造化行 (schemaの rowform.cols 定義に従って入力欄を生成)
   function rowformRowHtml(f, r) {
     r = r || {};
+    // ラベルは上に置かず placeholder に。各セル1行でコンパクトに
     const cell = fld => {
       const v = r[fld.key] || "";
       if (fld.type === "select")
-        return `<label class="dm-l">${esc(fld.label)}<select class="fi" data-dk="${fld.key}"><option value="">—</option>${fld.opts.map(o => `<option ${v === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></label>`;
+        return `<select class="fi" data-dk="${fld.key}"><option value="">${esc(fld.label)}</option>${fld.opts.map(o => `<option ${v === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
       const cls = fld.suggest ? "fi er-maker" : "fi";
       const extra = fld.type === "num" ? 'type="number" inputmode="numeric" min="0"' : "";
-      return `<label class="dm-l">${esc(fld.label)}<input class="${cls}" data-dk="${fld.key}" value="${esc(v)}" ${extra} autocomplete="off"></label>`;
+      return `<input class="${cls}" data-dk="${fld.key}" value="${esc(v)}" placeholder="${esc(fld.label)}" ${extra} autocomplete="off">`;
     };
     return `<div class="row-item rowform-item">
       ${f.rowform.cols.map(row => row.length > 1 ? `<div class="dm-grid">${row.map(cell).join("")}</div>` : cell(row[0])).join("")}
@@ -241,7 +242,9 @@
     return o;
   }
   function fmtRowform(f, r) {
-    return f.rowform.cols.flat().map(fld => r[fld.key] ? `${fld.label}:${r[fld.key]}` : null).filter(Boolean).join(" / ");
+    const flat = f.rowform.cols.flat();
+    if (flat.length === 1) return r[flat[0].key] || "";
+    return flat.map(fld => r[fld.key] ? `${fld.label}:${r[fld.key]}` : null).filter(Boolean).join(" / ");
   }
   function fieldKind(f) { return f.equip ? "equip" : f.chemical ? "chemical" : f.material ? "material" : f.desmear ? "desmear" : null; }
   function isRowField(f) { return !!(fieldKind(f) || f.rowform); }
@@ -607,17 +610,17 @@
       state.secIdx = si;
       const sec = SCHEMA[si];
       const secFilled = sec.fields.filter(f => m.fields && m.fields[f.id] && m.fields[f.id].value).length;
+      const secNote = (m.fields && m.fields["__note_" + sec.section] && m.fields["__note_" + sec.section].value) || "";
       const rows = sec.fields.map(f => {
         const d = (m.fields && m.fields[f.id]) || {};
         const val = d.value && String(d.value).trim();
-        if (state.hideEmpty && !val && !d.remark) return "";
+        if (state.hideEmpty && !val) return "";
+        const showSub = f.sub && !f.spec;   // スペック項目のサブ(書式ヒント)は冗長なので詳細でも隠す
         return `<div class="field">
-          <div class="field-label">${esc(f.label)}</div>
-          ${f.sub ? `<div class="field-sub">${esc(f.sub)}</div>` : ""}
+          <div class="field-label">${esc(f.label)}${showSub ? ` <span class="field-sub-inline">${esc(f.sub.split("\n")[0])}</span>` : ""}</div>
           <div class="field-val ${val ? "" : "blank"}">${val ? esc(d.value) : "未記入"}</div>
-          ${d.remark ? `<div class="field-remark">📝 ${esc(d.remark)}</div>` : ""}
         </div>`;
-      }).join("");
+      }).join("") + (secNote ? `<div class="field"><div class="field-remark">📝 ${esc(secNote)}</div></div>` : "");
       const anim = dir === "l" ? "slide-l" : dir === "r" ? "slide-r" : "";
       pagerEl.innerHTML = `
         <div class="pager-nav">
@@ -698,15 +701,14 @@
         <div class="es-body">
           ${sec.fields.map(f => {
             const d = (m.fields && m.fields[f.id]) || {};
-            // スペック入力: 数値をドロップダウンで選択 (厚み等)
+            // スペック入力: 数値/選択。単一・範囲は「ラベル＋入力」を1行に (サブ表示や備考は無し)
             if (f.spec) {
               const vals = parseSpec(d, f.spec);
-              return `<div class="efield">
+              const inline = f.spec.kind === "single" || f.spec.kind === "range";
+              return `<div class="efield ${inline ? "efield-inline" : ""}">
                 <label class="fl">${esc(f.label)}</label>
-                ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
-                ${!d.spec && d.value ? `<div class="fhint">現在の記録: ${esc(d.value)}</div>` : ""}
                 <div class="spec-box" data-fid="${f.id}"><div class="spec-row">${specInner(f.spec, vals)}</div></div>
-                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足" value="${esc(d.remark || "")}">
+                ${!d.spec && d.value ? `<div class="fhint">現在: ${esc(d.value)}</div>` : ""}
               </div>`;
             }
             // 設備 / 材料 / 薬液 / デスミア / 汎用構造化(rowform): 行入力 (行追加可)
@@ -718,40 +720,37 @@
                 : kind === "equip" ? "装置を追加" : kind === "chemical" ? "薬液を追加" : kind === "desmear" ? "設備を追加" : "材料を追加";
               return `<div class="efield">
                 <label class="fl">${esc(f.label)}</label>
-                ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
                 <div class="row-box" data-fid="${f.id}" data-kind="${kind}">
                   ${rows.map(r => rowItemHtml(f, r)).join("")}
                   <button type="button" class="btn ghost sm eq-add">${svg("plus", 13)} ${addLabel}</button>
                 </div>
               </div>`;
             }
-            // 選択式 (単一/複数): チップ + その他。回答の再入力欄は無し
+            // 選択式 (単一/複数): チップ + その他 (備考は無し)
             if (f.opts) {
               const sel = splitVals(d.value);
               const custom = sel.filter(x => !f.opts.includes(x));
               const otherOn = custom.length > 0;
               return `<div class="efield">
                 <label class="fl">${esc(f.label)}${f.multi ? ' <span class="multi-tag">複数選択可</span>' : ""}</label>
-                ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
                 <div class="optchips" data-for="${f.id}" data-multi="${f.multi ? 1 : 0}">
                   ${f.opts.map(o => `<span class="optchip ${sel.includes(o) ? "on" : ""}" data-val="${esc(o)}">${esc(o)}</span>`).join("")}
                   <span class="optchip other-chip ${otherOn ? "on" : ""}" data-val="${OTHER}">その他…</span>
                 </div>
                 <input class="fi other-input" data-for="${f.id}" placeholder="その他（自由入力）" value="${esc(custom.join(" / "))}" style="${otherOn ? "" : "display:none"}">
                 <input type="hidden" data-fid="${f.id}" data-k="value" value="${esc(d.value || "")}">
-                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足" value="${esc(d.remark || "")}">
               </div>`;
             }
-            // 通常項目: 回答 + 備考
+            // 通常項目: 回答のみ (備考は工程末尾にまとめて1つ)
             return `<div class="efield">
-              <label class="fl">${esc(f.label)}</label>
-              ${f.sub ? `<div class="fhint">${esc(f.sub)}</div>` : ""}
-              <div class="pair">
-                <textarea class="fi" data-fid="${f.id}" data-k="value" rows="1" placeholder="${esc(f.example ? "例: " + f.example : "")}">${esc(d.value || "")}</textarea>
-                <input class="fi" data-fid="${f.id}" data-k="remark" placeholder="備考 / 補足${f.note ? " — " + esc(f.note) : ""}" value="${esc(d.remark || "")}">
-              </div>
+              <label class="fl">${esc(f.label)}${f.sub ? ` <span class="field-sub-inline">${esc(f.sub.split("\n")[0])}</span>` : ""}</label>
+              <textarea class="fi" data-fid="${f.id}" data-k="value" rows="1" placeholder="${esc(f.example ? "例: " + f.example : "")}">${esc(d.value || "")}</textarea>
             </div>`;
           }).join("")}
+          <div class="efield sec-note-field">
+            <label class="fl">${svg("edit", 13)} この工程の備考</label>
+            <textarea class="fi" data-fid="__note_${esc(sec.section)}" data-k="value" rows="2" placeholder="工程全体の補足・気づき (任意)">${esc((m.fields && m.fields["__note_" + sec.section] && m.fields["__note_" + sec.section].value) || "")}</textarea>
+          </div>
         </div>
       </details>`;
   }
@@ -960,26 +959,21 @@
       if (scoped) SCHEMA[onlySec].fields.forEach(f => delete fields[f.id]);
       modalRoot.querySelectorAll("input[data-fid],textarea[data-fid]").forEach(el => {
         const fid = el.dataset.fid, k = el.dataset.k, v = el.value.trim();
+        if (fid.startsWith("__note_")) { if (v) fields[fid] = { value: v }; else delete fields[fid]; return; }
         if (v) { fields[fid] = fields[fid] || {}; fields[fid][k] = v; }
       });
       // 行入力(装置/材料/薬液/デスミア/構造化): rows と 表示用テキスト(value) を両方保存
       modalRoot.querySelectorAll(".row-box").forEach(box => {
         const fid = box.dataset.fid, bf = FIELD[fid] || {};
         const rows = readRows(box);
-        const remark = fields[fid] && fields[fid].remark;
-        if (rows.length) { fields[fid] = { rows, value: rows.map(r => fmtRowByField(bf, r)).join("\n") }; if (remark) fields[fid].remark = remark; }
+        if (rows.length) fields[fid] = { rows, value: rows.map(r => fmtRowByField(bf, r)).join("\n") };
         else delete fields[fid];
       });
       // スペック: spec(選択値) と value(整形テキスト) を保存
       modalRoot.querySelectorAll(".spec-box").forEach(box => {
         const fid = box.dataset.fid, sv = readSpec(box);
-        const remark = fields[fid] && fields[fid].remark;
-        const has = Object.keys(sv).length > 0;
-        if (has || remark) {
-          fields[fid] = {};
-          if (has) { fields[fid].spec = sv; fields[fid].value = fmtSpec(fid, sv); }
-          if (remark) fields[fid].remark = remark;
-        } else delete fields[fid];
+        if (Object.keys(sv).length) fields[fid] = { spec: sv, value: fmtSpec(fid, sv) };
+        else delete fields[fid];
       });
       return fields;
     }

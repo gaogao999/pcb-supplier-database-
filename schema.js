@@ -60,7 +60,6 @@ window.SCHEMA = [
       {
         "id": "f4",
         "label": "主要顧客",
-        "sub": "多い順に行を追加",
         "example": "SONY、Canon、A社、B社、D社",
         "rowform": {
           "add": "顧客を追加",
@@ -69,6 +68,19 @@ window.SCHEMA = [
               {
                 "key": "name",
                 "label": "顧客名"
+              },
+              {
+                "key": "tier",
+                "label": "系列",
+                "type": "select",
+                "opts": [
+                  "日系",
+                  "中国系",
+                  "台湾系",
+                  "韓国系",
+                  "欧米系",
+                  "その他"
+                ]
               }
             ]
           ]
@@ -76,35 +88,79 @@ window.SCHEMA = [
       },
       {
         "id": "f5",
-        "label": "主な基材メーカー",
-        "sub": "FR-4一般材　　  　 Tg＜150℃(TMA)",
+        "label": "FR-4一般材",
         "note": "量産実績のある基材メーカーを全て",
         "example": "Nanya、生益、TUC",
-        "material": true
+        "rowform": {
+          "add": "メーカーを追加",
+          "cols": [
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "material"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f6",
-        "label": "主な基材メーカー",
-        "sub": "FR-4 High Tg材 　Tg＜150℃(TMA)",
+        "label": "FR-4 High Tg材",
         "note": "量産実績のある基材メーカーを全て",
         "example": "Nanya、生益、TUC",
-        "material": true
+        "rowform": {
+          "add": "メーカーを追加",
+          "cols": [
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "material"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f7",
-        "label": "主な基材メーカー",
-        "sub": "低誘電材",
+        "label": "低誘電材",
         "note": "量産実績のある基材メーカーを全て",
         "example": "EMC、TUC",
-        "material": true
+        "rowform": {
+          "add": "メーカーを追加",
+          "cols": [
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "material"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f8",
-        "label": "主な基材メーカー",
-        "sub": "アルミ基材",
+        "label": "アルミ基材",
         "note": "量産実績のある基材メーカーを全て",
         "example": "華正",
-        "material": true
+        "rowform": {
+          "add": "メーカーを追加",
+          "cols": [
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "material"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f9",
@@ -328,21 +384,8 @@ window.SCHEMA = [
               ]
             },
             {
-              "key": "ct",
-              "label": "銅箔(表)",
-              "unit": "um",
-              "opts": [
-                "9",
-                "12",
-                "18",
-                "35",
-                "70",
-                "105"
-              ]
-            },
-            {
-              "key": "cb",
-              "label": "銅箔(裏)",
+              "key": "foil",
+              "label": "銅箔",
               "unit": "um",
               "opts": [
                 "9",
@@ -381,43 +424,44 @@ window.SCHEMA = [
       },
       {
         "id": "f21",
-        "label": "内層銅箔厚み",
+        "label": "内層/外層 銅箔厚み",
         "sub": "最小～最大oz",
         "example": "1～3oz",
         "spec": {
-          "kind": "range",
-          "unit": "oz",
-          "opts": [
-            "1/4",
-            "1/3",
-            "1/2",
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6"
-          ]
-        }
-      },
-      {
-        "id": "f22",
-        "label": "外層銅厚み（銅メッキ込）",
-        "sub": "最小～最大oz",
-        "example": "1/2～2oz",
-        "spec": {
-          "kind": "range",
-          "unit": "oz",
-          "opts": [
-            "1/4",
-            "1/3",
-            "1/2",
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6"
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "inner",
+              "label": "内層",
+              "unit": "oz",
+              "opts": [
+                "1/4",
+                "1/3",
+                "1/2",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6"
+              ]
+            },
+            {
+              "key": "outer",
+              "label": "外層",
+              "unit": "oz",
+              "opts": [
+                "1/4",
+                "1/3",
+                "1/2",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6"
+              ]
+            }
           ]
         }
       }
