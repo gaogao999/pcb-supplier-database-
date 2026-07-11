@@ -6,7 +6,7 @@
   "use strict";
 
   const SCHEMA = window.SCHEMA || [];
-  const APP_VERSION = "2.0.0";
+  const APP_VERSION = "2.1.0";
   const APP_DATE = "2026-07-09";
   const STORE_KEY = "pcb_makers_v1";   // ※このキーは変更しない (変更するとデータが見えなくなるため)
   const THEME_KEY = "pcb_theme";
@@ -120,11 +120,17 @@
     }
     return `<span class="spec-cell">${prefix}<input class="fi spec-sel spec-num" data-key="${key}" type="number" inputmode="decimal" step="any" value="${esc(cur || "")}" placeholder="${esc(ph || "—")}">${unit}</span>`;
   }
+  function specNumBare(key, cur, ph) {
+    return `<input class="fi spec-sel spec-num" data-key="${key}" type="number" inputmode="decimal" step="any" value="${esc(cur || "")}" placeholder="${esc(ph || "")}">`;
+  }
   function specInner(sp, vals) {
     if (sp.kind === "range")
       return specCell("min", { opts: sp.opts }, vals.min, "最小") + `<span class="spec-sep">～</span>` + specCell("max", { opts: sp.opts, unit: sp.unit }, vals.max, "最大");
     if (sp.kind === "single")
       return specCell("v", { opts: sp.opts, unit: sp.unit, prefix: sp.prefix }, vals.v, sp.opts ? "選択" : "数値");
+    // compact parts: 60/60×40um のように区切り文字でつなぐ
+    if (sp.compact)
+      return sp.parts.map((pt, i) => specNumBare(pt.key, vals[pt.key], pt.label) + (i < sp.parts.length - 1 ? `<span class="spec-sep">${esc(sp.seps[i])}</span>` : "")).join("") + (sp.unit ? `<span class="spec-unit">${esc(sp.unit)}</span>` : "");
     return sp.parts.map(pt => `<span class="spec-part"><span class="spec-plabel">${esc(pt.label)}</span>${specCell(pt.key, pt, vals[pt.key], "—")}</span>`).join("");
   }
   function readSpec(box) {
@@ -136,6 +142,12 @@
     const sp = FIELD[fid].spec, pre = sp.prefix || "";
     if (sp.kind === "range") { if (vals.min && vals.max) return `${vals.min}～${vals.max}${sp.unit}`; const o = vals.min || vals.max; return o ? `${o}${sp.unit}` : ""; }
     if (sp.kind === "single") return vals.v ? `${pre}${vals.v}${sp.unit || ""}` : "";
+    if (sp.compact) {
+      const vv = sp.parts.map(pt => vals[pt.key] || "");
+      if (vv.every(x => !x)) return "";
+      let s = vv[0]; for (let i = 1; i < vv.length; i++) s += sp.seps[i - 1] + vv[i];
+      return s + (sp.unit || "");
+    }
     return sp.parts.map(pt => vals[pt.key] ? `${pt.label}${(pt.prefix || "")}${vals[pt.key]}${pt.unit || ""}` : null).filter(Boolean).join(" / ");
   }
 
@@ -232,9 +244,21 @@
       const extra = fld.type === "num" ? 'type="number" inputmode="numeric" min="0"' : "";
       return `<input class="${cls}" data-dk="${fld.key}" value="${esc(v)}" placeholder="${esc(fld.label)}" ${extra} autocomplete="off">`;
     };
-    return `<div class="row-item rowform-item">
-      ${f.rowform.cols.map(row => row.length > 1 ? `<div class="dm-grid">${row.map(cell).join("")}</div>` : cell(row[0])).join("")}
-    </div>`;
+    const rowHtmlOf = rows => rows.map(row => row.length > 1 ? `<div class="dm-grid">${row.map(cell).join("")}</div>` : cell(row[0])).join("");
+    const gate = f.rowform.gate;
+    if (gate) {
+      // 先頭列=ゲート(可否など)。ゲート値が gate.show の時だけ残りを表示
+      const gcell = f.rowform.cols[0], rest = f.rowform.cols.slice(1);
+      const shown = (r[gate.key] || "") === gate.show;
+      const gsel = gcell[0];
+      const gv = r[gate.key] || "";
+      const gselHtml = `<select class="fi rf-gate" data-dk="${gsel.key}" data-show="${esc(gate.show)}"><option value="">${esc(gsel.label)}</option>${gsel.opts.map(o => `<option ${gv === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+      return `<div class="row-item rowform-item">
+        ${gselHtml}
+        <div class="rf-gated" style="${shown ? "" : "display:none"}">${rowHtmlOf(rest)}</div>
+      </div>`;
+    }
+    return `<div class="row-item rowform-item">${rowHtmlOf(f.rowform.cols)}</div>`;
   }
   function readRowform(item, f) {
     const o = {};
@@ -262,6 +286,8 @@
     return fieldKind(f) === "equip" ? equipRowHtml(r) : materialRowHtml(r);
   }
   function rowItemHtml(f, r) {
+    // single(可否など単一行)はスワイプ削除/複製なしでそのまま
+    if (f.rowform && f.rowform.single) return rowInnerHtml(f, r);
     return `<div class="row-wrap">
       <div class="row-act left"><button type="button" class="row-dup-btn">${svg("plus2", 15)} 複製</button></div>
       <div class="row-act right"><button type="button" class="row-del-btn">${svg("trash", 15)} 削除</button></div>
@@ -704,7 +730,8 @@
             // スペック入力: 数値/選択。単一・範囲は「ラベル＋入力」を1行に (サブ表示や備考は無し)
             if (f.spec) {
               const vals = parseSpec(d, f.spec);
-              const inline = f.spec.kind === "single" || f.spec.kind === "range";
+              // 単一/範囲/2〜3部品まで「ラベル＋入力」を1行に
+              const inline = f.spec.kind !== "parts" || f.spec.parts.length <= 3;
               return `<div class="efield ${inline ? "efield-inline" : ""}">
                 <label class="fl">${esc(f.label)}</label>
                 <div class="spec-box" data-fid="${f.id}"><div class="spec-row">${specInner(f.spec, vals)}</div></div>
@@ -718,11 +745,12 @@
               const rows = (d.rows && d.rows.length) ? d.rows : (d.value && simple ? [{ note: d.value }] : [{}]);
               const addLabel = f.rowform ? (f.rowform.add || "行を追加")
                 : kind === "equip" ? "装置を追加" : kind === "chemical" ? "薬液を追加" : kind === "desmear" ? "設備を追加" : "材料を追加";
+              const single = f.rowform && f.rowform.single;
               return `<div class="efield">
                 <label class="fl">${esc(f.label)}</label>
                 <div class="row-box" data-fid="${f.id}" data-kind="${kind}">
-                  ${rows.map(r => rowItemHtml(f, r)).join("")}
-                  <button type="button" class="btn ghost sm eq-add">${svg("plus", 13)} ${addLabel}</button>
+                  ${(single ? rows.slice(0, 1) : rows).map(r => rowItemHtml(f, r)).join("")}
+                  ${single ? "" : `<button type="button" class="btn ghost sm eq-add">${svg("plus", 13)} ${addLabel}</button>`}
                 </div>
               </div>`;
             }
@@ -889,7 +917,7 @@
       Object.entries(vals.eq || {}).forEach(([fid, rows]) => {
         const box = modalRoot.querySelector(`.row-box[data-fid="${fid}"]`);
         if (!box) return;
-        box.querySelectorAll(".row-wrap").forEach(r => r.remove());
+        box.querySelectorAll(".row-wrap, .row-item").forEach(r => r.remove());
         const add = box.querySelector(".eq-add");
         const bf = FIELD[box.dataset.fid] || {};
         (rows.length ? rows : [{}]).forEach(r => add.insertAdjacentHTML("beforebegin", rowItemHtml(bf, r)));
@@ -921,7 +949,19 @@
         scheduleDraft();
         if (isMaker(e)) { clearTimeout(sugTimer); showSug(e.target); }
       },
-      change: () => scheduleDraft(),
+      change: e => {
+        // ゲート付き行(可否など): 表示/非表示を切替。非表示にした時は中身をクリア
+        const g = e.target.closest(".rf-gate");
+        if (g) {
+          const gated = g.parentElement.querySelector(".rf-gated");
+          if (gated) {
+            const show = g.value === g.dataset.show;
+            gated.style.display = show ? "" : "none";
+            if (!show) gated.querySelectorAll("input,select").forEach(el => { el.value = ""; });
+          }
+        }
+        scheduleDraft();
+      },
       click: e => {
         // 行スワイプで表示した「削除」
         const delBtn = e.target.closest(".row-del-btn");

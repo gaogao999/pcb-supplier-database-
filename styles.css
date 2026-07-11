@@ -200,9 +200,16 @@ textarea.fi{resize:vertical;min-height:44px}
 .efield:first-child{border-top:none}
 .efield .fl{color:var(--text);white-space:pre-line;margin-bottom:2px}
 /* ラベル＋入力を1行に (単一/範囲スペック) */
-.efield-inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.efield-inline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .efield-inline > .fl{margin:0;flex:0 0 auto}
 .efield-inline .spec-box{margin:0;flex:1 1 auto;display:flex;justify-content:flex-end}
+.efield-inline .spec-row{justify-content:flex-end}
+/* 2〜3部品を1行に収めるコンパクト化 */
+.efield-inline .spec-cell input.spec-num{width:58px;padding:9px 5px}
+.efield-inline .spec-cell select.fi{min-width:64px;padding:9px 5px}
+.efield-inline .spec-part{padding:5px 7px;gap:3px}
+.efield-inline .spec-plabel{font-size:10.5px}
+.efield-inline .spec-unit{font-size:11px}
 .field-sub-inline{font-size:11px;color:var(--faint);font-weight:500}
 /* 工程末尾の備考 */
 .sec-note-field{margin-top:6px;padding-top:12px;border-top:1px dashed var(--line)}
@@ -266,6 +273,9 @@ textarea.fi{resize:vertical;min-height:44px}
 /* 汎用 構造化行 (×は枠の右上角に浮かせて余白を作らない) */
 .rowform-item{gap:8px}
 .rowform-item .fi{background:var(--card);font-size:14px}
+/* ゲート付き行 (可否→内容表示) */
+.rf-gate{font-weight:700}
+.rf-gated{display:flex;flex-direction:column;gap:8px;margin-top:2px}
 .multi-tag{font-size:10px;font-weight:800;color:var(--accent);background:#4f8cff1c;border:1px solid #4f8cff44;padding:1px 7px;border-radius:999px;vertical-align:middle;margin-left:4px}
 
 /* 工程編集シートの前後ナビ */
@@ -301,6 +311,9 @@ textarea.fi{resize:vertical;min-height:44px}
 .spec-cell{display:inline-flex;align-items:center;gap:4px}
 .spec-cell select.fi{width:auto;min-width:78px;padding:11px 8px}
 .spec-cell input.spec-num{width:92px;padding:11px 9px;text-align:center}
+/* compact parts (60/60×40um): 数値入力を横一列に */
+.spec-row .spec-num{width:64px;flex:0 0 auto;text-align:center;padding:10px 6px}
+.efield-inline .spec-row .spec-num{width:54px;padding:9px 4px}
 .spec-unit{font-size:13px;color:var(--muted);font-weight:700}
 .spec-sep{color:var(--faint);font-weight:800}
 .spec-part{display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px dashed var(--line2);border-radius:10px;padding:6px 8px}

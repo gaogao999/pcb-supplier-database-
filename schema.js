@@ -582,14 +582,23 @@ window.SCHEMA = [
       },
       {
         "id": "f33",
-        "label": "最小レーザーViaランド径(a)",
-        "sub": "@最小レーザーVia径",
-        "example": "最小Via径（0.075）＋0.15mm"
-      },
-      {
-        "id": "f34",
-        "label": "最小レーザーVia Targetランド径(b)",
-        "example": "最小Via径（0.075）＋0.2mm"
+        "label": "レーザーViaランド径",
+        "example": "最小Via径（0.075）＋0.15mm",
+        "spec": {
+          "kind": "parts",
+          "parts": [
+            {
+              "key": "a",
+              "label": "ランド径a",
+              "unit": "um"
+            },
+            {
+              "key": "b",
+              "label": "Target径b",
+              "unit": "um"
+            }
+          ]
+        }
       },
       {
         "id": "f35",
@@ -708,12 +717,6 @@ window.SCHEMA = [
             ],
             [
               {
-                "key": "blFreq",
-                "label": "バックライト確認頻度"
-              }
-            ],
-            [
-              {
                 "key": "spec",
                 "label": "規格"
               }
@@ -737,6 +740,16 @@ window.SCHEMA = [
         "label": "生産再開後のダミー基板運用ルール",
         "sub": "枚数、ダミー基板の種類、交換頻度",
         "example": "20枚、専用銅張り板（穴あり）\n基材が見えたら交換"
+      },
+      {
+        "id": "f131",
+        "label": "バックライト検査頻度",
+        "opts": [
+          "毎ロット",
+          "抜き取り",
+          "全数",
+          "その他"
+        ]
       }
     ]
   },
@@ -824,21 +837,24 @@ window.SCHEMA = [
         "example": "60/60 × 40um",
         "spec": {
           "kind": "parts",
+          "compact": true,
+          "unit": "um",
+          "seps": [
+            "/",
+            "×"
+          ],
           "parts": [
             {
               "key": "l",
-              "label": "L",
-              "unit": "um"
+              "label": "L"
             },
             {
               "key": "s",
-              "label": "S",
-              "unit": "um"
+              "label": "S"
             },
             {
               "key": "t",
-              "label": "銅厚",
-              "unit": "um"
+              "label": "銅厚"
             }
           ]
         }
@@ -850,21 +866,24 @@ window.SCHEMA = [
         "example": "45/45 × 12um(M-SAP）",
         "spec": {
           "kind": "parts",
+          "compact": true,
+          "unit": "um",
+          "seps": [
+            "/",
+            "×"
+          ],
           "parts": [
             {
               "key": "l",
-              "label": "L",
-              "unit": "um"
+              "label": "L"
             },
             {
               "key": "s",
-              "label": "S",
-              "unit": "um"
+              "label": "S"
             },
             {
               "key": "t",
-              "label": "銅厚",
-              "unit": "um"
+              "label": "銅厚"
             }
           ]
         }
@@ -876,21 +895,24 @@ window.SCHEMA = [
         "example": "50/50 x  23um",
         "spec": {
           "kind": "parts",
+          "compact": true,
+          "unit": "um",
+          "seps": [
+            "/",
+            "×"
+          ],
           "parts": [
             {
               "key": "l",
-              "label": "L",
-              "unit": "um"
+              "label": "L"
             },
             {
               "key": "s",
-              "label": "S",
-              "unit": "um"
+              "label": "S"
             },
             {
               "key": "t",
-              "label": "銅厚",
-              "unit": "um"
+              "label": "銅厚"
             }
           ]
         }
@@ -902,21 +924,24 @@ window.SCHEMA = [
         "example": "実績なし",
         "spec": {
           "kind": "parts",
+          "compact": true,
+          "unit": "um",
+          "seps": [
+            "/",
+            "×"
+          ],
           "parts": [
             {
               "key": "l",
-              "label": "L",
-              "unit": "um"
+              "label": "L"
             },
             {
               "key": "s",
-              "label": "S",
-              "unit": "um"
+              "label": "S"
             },
             {
               "key": "t",
-              "label": "銅厚",
-              "unit": "um"
+              "label": "銅厚"
             }
           ]
         }
@@ -977,23 +1002,6 @@ window.SCHEMA = [
         }
       },
       {
-        "id": "f67",
-        "label": "LDI装置メーカー\n保有台数",
-        "sub": "メーカー名\n○ライン（合計□台）",
-        "example": "●●\n2ライン（合計4台）",
-        "equip": true
-      },
-      {
-        "id": "f68",
-        "label": "セミオート露光機保有台数",
-        "sub": "●台",
-        "example": "5台",
-        "spec": {
-          "kind": "single",
-          "unit": "台"
-        }
-      },
-      {
         "id": "f69",
         "label": "レジスト",
         "sub": "ドライフィルム/液体レジスト別に行を追加",
@@ -1031,6 +1039,28 @@ window.SCHEMA = [
               }
             ]
           ]
+        }
+      },
+      {
+        "id": "f156",
+        "label": "ラミネーター",
+        "equip": true
+      },
+      {
+        "id": "f67",
+        "label": "LDI装置メーカー\n保有台数",
+        "sub": "メーカー名\n○ライン（合計□台）",
+        "example": "●●\n2ライン（合計4台）",
+        "equip": true
+      },
+      {
+        "id": "f68",
+        "label": "セミオート露光機保有台数",
+        "sub": "●台",
+        "example": "5台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
         }
       },
       {
@@ -1111,23 +1141,6 @@ window.SCHEMA = [
         }
       },
       {
-        "id": "f73",
-        "label": "LDI装置メーカー\n保有台数",
-        "sub": "メーカー名\n○ライン（合計□台）",
-        "example": "●●\n2ライン（合計4台）",
-        "equip": true
-      },
-      {
-        "id": "f74",
-        "label": "セミオート露光機保有台数",
-        "sub": "●台",
-        "example": "5台",
-        "spec": {
-          "kind": "single",
-          "unit": "台"
-        }
-      },
-      {
         "id": "f75",
         "label": "レジスト",
         "sub": "ドライフィルム/液体レジスト別に行を追加",
@@ -1165,6 +1178,23 @@ window.SCHEMA = [
               }
             ]
           ]
+        }
+      },
+      {
+        "id": "f73",
+        "label": "LDI装置メーカー\n保有台数",
+        "sub": "メーカー名\n○ライン（合計□台）",
+        "example": "●●\n2ライン（合計4台）",
+        "equip": true
+      },
+      {
+        "id": "f74",
+        "label": "セミオート露光機保有台数",
+        "sub": "●台",
+        "example": "5台",
+        "spec": {
+          "kind": "single",
+          "unit": "台"
         }
       },
       {
@@ -1216,26 +1246,86 @@ window.SCHEMA = [
     "fields": [
       {
         "id": "f78",
-        "label": "SR前処理の粗化処理方法",
-        "example": "ブラシ＋パーミス／ブラシ＋化学処理",
-        "opts": [
-          "ブラシ＋パーミス",
-          "ブラシ＋化学処理",
-          "ブラシのみ",
-          "化学処理"
-        ]
+        "label": "前処理（粗化・台数）",
+        "rowform": {
+          "add": "ラインを追加",
+          "cols": [
+            [
+              {
+                "key": "method",
+                "label": "粗化方式",
+                "type": "select",
+                "opts": [
+                  "ブラシ＋パーミス",
+                  "ブラシ＋化学処理",
+                  "ブラシのみ",
+                  "化学処理",
+                  "その他"
+                ]
+              },
+              {
+                "key": "qty",
+                "label": "台数",
+                "type": "num"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f79",
-        "label": "インク塗工方法",
-        "sub": "スクリーン印刷/スプレーコーター/ロールコーター",
-        "example": "スクリーン印刷とスプレーコーター",
-        "opts": [
-          "スクリーン印刷",
-          "スプレーコーター",
-          "ロールコーター"
-        ],
-        "multi": true
+        "label": "印刷方法",
+        "rowform": {
+          "add": "ラインを追加",
+          "cols": [
+            [
+              {
+                "key": "method",
+                "label": "印刷方法",
+                "type": "select",
+                "opts": [
+                  "スクリーン印刷",
+                  "スプレーコーター",
+                  "ロールコーター",
+                  "インクジェット"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "equip"
+              },
+              {
+                "key": "model",
+                "label": "装置名"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "id": "f91",
+        "label": "使用インク",
+        "rowform": {
+          "add": "インクを追加",
+          "cols": [
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "material"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f80",
@@ -1326,13 +1416,6 @@ window.SCHEMA = [
         "label": "アンダーカット量管理の有無",
         "sub": "管理している場合はMax値",
         "example": "25um"
-      },
-      {
-        "id": "f91",
-        "label": "使用SR材料",
-        "sub": "顧客：メーカー名・品番",
-        "example": "SONY：太陽・PSR-2000 SP200HF",
-        "material": true
       }
     ]
   },
@@ -1353,15 +1436,36 @@ window.SCHEMA = [
       },
       {
         "id": "f94",
-        "label": "印刷方法",
-        "sub": "インクジェット/スクリーン",
-        "note": "乾燥方法も説明してください",
-        "example": "インクジェット、スクリーン",
-        "opts": [
-          "インクジェット",
-          "スクリーン"
-        ],
-        "multi": true
+        "label": "印刷方式",
+        "rowform": {
+          "add": "ラインを追加",
+          "cols": [
+            [
+              {
+                "key": "method",
+                "label": "印刷方式",
+                "type": "select",
+                "opts": [
+                  "インクジェット",
+                  "スクリーン"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "equip"
+              },
+              {
+                "key": "qty",
+                "label": "台数",
+                "type": "num"
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f95",
@@ -1406,6 +1510,16 @@ window.SCHEMA = [
         }
       },
       {
+        "id": "f157",
+        "label": "ルーター装置",
+        "equip": true
+      },
+      {
+        "id": "f158",
+        "label": "ルータービットメーカー",
+        "material": true
+      },
+      {
         "id": "f100",
         "label": "金型パンチの有無",
         "note": "プルダウンから選択してください",
@@ -1433,105 +1547,361 @@ window.SCHEMA = [
     "fields": [
       {
         "id": "f102",
-        "label": "OSP可否",
-        "note": "プルダウンから選択してください",
-        "example": "可 available",
-        "opts": [
-          "可",
-          "不可"
-        ]
-      },
-      {
-        "id": "f103",
-        "label": "┗OSPメーカーと材料名",
-        "example": "Entek Plus HT",
-        "material": true
-      },
-      {
-        "id": "f104",
-        "label": "OSPでの実装品質保証期間",
-        "example": "6か月",
-        "spec": {
-          "kind": "single",
-          "opts": [
-            "3か月",
-            "6か月",
-            "1年",
-            "2年"
+        "label": "OSP",
+        "rowform": {
+          "single": true,
+          "gate": {
+            "key": "avail",
+            "show": "可"
+          },
+          "cols": [
+            [
+              {
+                "key": "avail",
+                "label": "可否",
+                "opts": [
+                  "可",
+                  "不可"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ",
+                  "縦型",
+                  "その他"
+                ]
+              },
+              {
+                "key": "warr",
+                "label": "実装保証",
+                "type": "select",
+                "opts": [
+                  "3か月",
+                  "6か月",
+                  "1年",
+                  "2年"
+                ]
+              }
+            ]
           ]
         }
       },
       {
         "id": "f105",
-        "label": "無電解Ni/Auメッキ製造可否",
-        "note": "プルダウンから選択してください",
-        "example": "可 available",
-        "opts": [
-          "可",
-          "不可"
-        ]
-      },
-      {
-        "id": "f106",
-        "label": "無電解Ni/Auメッキでの実装品質保証期間",
-        "example": "1年",
-        "spec": {
-          "kind": "single",
-          "opts": [
-            "3か月",
-            "6か月",
-            "1年",
-            "2年"
+        "label": "無電解Ni/Au(ENIG)",
+        "rowform": {
+          "single": true,
+          "gate": {
+            "key": "avail",
+            "show": "可"
+          },
+          "cols": [
+            [
+              {
+                "key": "avail",
+                "label": "可否",
+                "opts": [
+                  "可",
+                  "不可"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ",
+                  "縦型",
+                  "その他"
+                ]
+              },
+              {
+                "key": "warr",
+                "label": "実装保証",
+                "type": "select",
+                "opts": [
+                  "3か月",
+                  "6か月",
+                  "1年",
+                  "2年"
+                ]
+              }
+            ]
           ]
         }
       },
       {
         "id": "f107",
-        "label": "電解Auメッキ（ハード）製造可否",
-        "sub": "純度 99.9%",
-        "note": "プルダウンから選択してください",
-        "example": "不可 not available",
-        "opts": [
-          "可",
-          "不可"
-        ]
+        "label": "電解Au(ハード)",
+        "rowform": {
+          "single": true,
+          "gate": {
+            "key": "avail",
+            "show": "可"
+          },
+          "cols": [
+            [
+              {
+                "key": "avail",
+                "label": "可否",
+                "opts": [
+                  "可",
+                  "不可"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ",
+                  "縦型",
+                  "その他"
+                ]
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f108",
-        "label": "電解Auメッキ（ソフト）製造可否",
-        "sub": "純度 99.99％",
-        "note": "プルダウンから選択してください",
-        "example": "不可 not available",
-        "opts": [
-          "可",
-          "不可"
-        ]
+        "label": "電解Au(ソフト)",
+        "rowform": {
+          "single": true,
+          "gate": {
+            "key": "avail",
+            "show": "可"
+          },
+          "cols": [
+            [
+              {
+                "key": "avail",
+                "label": "可否",
+                "opts": [
+                  "可",
+                  "不可"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ",
+                  "縦型",
+                  "その他"
+                ]
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f109",
-        "label": "無電解NiPdAuメッキ　製造可否",
-        "note": "プルダウンから選択してください",
-        "example": "可 available",
-        "opts": [
-          "可",
-          "不可"
-        ]
+        "label": "無電解NiPdAu(ENEPIG)",
+        "rowform": {
+          "single": true,
+          "gate": {
+            "key": "avail",
+            "show": "可"
+          },
+          "cols": [
+            [
+              {
+                "key": "avail",
+                "label": "可否",
+                "opts": [
+                  "可",
+                  "不可"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ",
+                  "縦型",
+                  "その他"
+                ]
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f110",
-        "label": "無電解Snメッキ　製造可否",
-        "note": "プルダウンから選択してください",
-        "example": "可 available",
-        "opts": [
-          "可",
-          "不可"
-        ]
+        "label": "無電解Sn",
+        "rowform": {
+          "single": true,
+          "gate": {
+            "key": "avail",
+            "show": "可"
+          },
+          "cols": [
+            [
+              {
+                "key": "avail",
+                "label": "可否",
+                "opts": [
+                  "可",
+                  "不可"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ",
+                  "縦型",
+                  "その他"
+                ]
+              }
+            ]
+          ]
+        }
       },
       {
         "id": "f111",
         "label": "その他特殊メッキ",
-        "note": "その他 保有するメッキ処理を記載",
-        "example": "無電解Agメッキ、カーボン印刷"
+        "rowform": {
+          "single": true,
+          "gate": {
+            "key": "avail",
+            "show": "可"
+          },
+          "cols": [
+            [
+              {
+                "key": "avail",
+                "label": "可否",
+                "opts": [
+                  "可",
+                  "不可"
+                ]
+              }
+            ],
+            [
+              {
+                "key": "maker",
+                "label": "メーカー",
+                "suggest": true,
+                "kind": "chemical"
+              },
+              {
+                "key": "model",
+                "label": "品番"
+              }
+            ],
+            [
+              {
+                "key": "config",
+                "label": "構成",
+                "type": "select",
+                "opts": [
+                  "水平",
+                  "バッチ",
+                  "縦型",
+                  "その他"
+                ]
+              }
+            ]
+          ]
+        }
       }
     ]
   },
@@ -1758,12 +2128,6 @@ window.SCHEMA = [
           "kind": "single",
           "unit": "倍"
         }
-      },
-      {
-        "id": "f131",
-        "label": "無電解銅メッキ",
-        "sub": "バックライト検査頻度",
-        "example": "毎ロット"
       },
       {
         "id": "f132",
