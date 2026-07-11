@@ -58,22 +58,23 @@
       "f4": {
         "rows": [
           {
-            "name": "SONY"
+            "name": "SONY",
+            "tier": "日系"
           },
           {
-            "name": "Canon"
+            "name": "Canon",
+            "tier": "日系"
           },
           {
-            "name": "A社"
+            "name": "A社",
+            "tier": "中国系"
           },
           {
-            "name": "B社"
-          },
-          {
-            "name": "D社"
+            "name": "B社",
+            "tier": "欧米系"
           }
         ],
-        "value": "顧客名:SONY\n顧客名:Canon\n顧客名:A社\n顧客名:B社\n顧客名:D社"
+        "value": "顧客名:SONY / 系列:日系\n顧客名:Canon / 系列:日系\n顧客名:A社 / 系列:中国系\n顧客名:B社 / 系列:欧米系"
       },
       "f5": {
         "rows": [
@@ -170,10 +171,9 @@
       "f19": {
         "spec": {
           "core": "50",
-          "ct": "12",
-          "cb": "12"
+          "foil": "12"
         },
-        "value": "コア50um / 銅箔(表)12um / 銅箔(裏)12um"
+        "value": "コア50um / 銅箔12um"
       },
       "f20": {
         "spec": {
@@ -182,10 +182,11 @@
         "value": "40um"
       },
       "f21": {
-        "value": "1～3oz"
-      },
-      "f22": {
-        "value": "1/2～2oz"
+        "spec": {
+          "inner": "1",
+          "outer": "2"
+        },
+        "value": "内層1oz / 外層2oz"
       },
       "f23": {
         "rows": [
@@ -778,6 +779,9 @@
       },
       "f155": {
         "value": "可"
+      },
+      "__note_会社情報": {
+        "value": "車載中心、IATF更新済。次回は新棟の稼働状況を確認。"
       }
     }
   }
